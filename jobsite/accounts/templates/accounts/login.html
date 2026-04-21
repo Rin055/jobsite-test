@@ -1,0 +1,348 @@
+{% extends 'base.html' %}
+{% block title %}Sign In — TalentBridge{% endblock %}
+
+{% block extra_css %}
+<style>
+    body { background: linear-gradient(135deg, #0A2463 0%, #1B3FA0 40%, #F8FAFF 100%); }
+
+    .auth-page {
+        min-height: calc(100vh - var(--nav-height));
+        display: flex; align-items: center; justify-content: center;
+        padding: 40px 20px;
+    }
+
+    .login-layout {
+        display: grid;
+        grid-template-columns: 440px 400px;
+        gap: 0;
+        border-radius: 24px;
+        overflow: hidden;
+        box-shadow: 0 40px 100px rgba(10,36,99,0.35);
+        max-width: 860px;
+        width: 100%;
+    }
+    @media (max-width: 768px) {
+        .login-layout { grid-template-columns: 1fr; }
+        .login-visual { display: none; }
+    }
+
+    /* ── Visual Panel ────────────────────────────── */
+    .login-visual {
+        background: linear-gradient(160deg, #0A2463 0%, #1B3FA0 50%, #2255D8 100%);
+        padding: 48px 40px;
+        display: flex; flex-direction: column; justify-content: space-between;
+        position: relative; overflow: hidden;
+    }
+    .login-visual::before {
+        content: '';
+        position: absolute; inset: 0;
+        background-image: radial-gradient(circle at 20% 80%, rgba(60,239,180,0.15) 0%, transparent 50%),
+                          radial-gradient(circle at 80% 20%, rgba(255,255,255,0.05) 0%, transparent 50%);
+        pointer-events: none;
+    }
+    .visual-logo {
+        font-family: 'Syne', sans-serif;
+        font-weight: 800;
+        font-size: 1.5rem;
+        color: #fff;
+        position: relative;
+    }
+    .visual-content { position: relative; }
+    .visual-title {
+        font-family: 'Syne', sans-serif;
+        font-weight: 800;
+        font-size: 1.8rem;
+        color: #fff;
+        line-height: 1.2;
+        margin-bottom: 14px;
+    }
+    .visual-sub { color: rgba(255,255,255,0.75); font-size: 0.9rem; line-height: 1.7; margin-bottom: 28px; }
+
+    .testimonial-card {
+        background: rgba(255,255,255,0.1);
+        border: 1px solid rgba(255,255,255,0.18);
+        border-radius: 14px;
+        padding: 18px;
+        backdrop-filter: blur(8px);
+    }
+    .testimonial-text {
+        font-size: 0.875rem;
+        color: rgba(255,255,255,0.9);
+        line-height: 1.6;
+        font-style: italic;
+        margin-bottom: 12px;
+    }
+    .testimonial-author {
+        display: flex; align-items: center; gap: 10px;
+    }
+    .testimonial-avatar {
+        width: 36px; height: 36px;
+        border-radius: 8px;
+        background: var(--accent);
+        display: flex; align-items: center; justify-content: center;
+        font-family: 'Syne', sans-serif;
+        font-weight: 700;
+        font-size: 0.8rem;
+        color: var(--primary);
+    }
+    .testimonial-name { font-size: 0.8rem; font-weight: 700; color: #fff; }
+    .testimonial-role { font-size: 0.725rem; color: rgba(255,255,255,0.6); }
+
+    .visual-stats {
+        display: flex; gap: 24px;
+        position: relative;
+    }
+    .v-stat { text-align: left; }
+    .v-stat-number {
+        font-family: 'Syne', sans-serif;
+        font-weight: 800;
+        font-size: 1.5rem;
+        color: var(--accent);
+    }
+    .v-stat-label { font-size: 0.75rem; color: rgba(255,255,255,0.65); }
+
+    /* ── Form Panel ──────────────────────────────── */
+    .login-form-panel {
+        background: #fff;
+        padding: 48px 40px;
+        display: flex; flex-direction: column; justify-content: center;
+    }
+
+    .form-title {
+        font-family: 'Syne', sans-serif;
+        font-weight: 800;
+        font-size: 1.6rem;
+        color: var(--text-primary);
+        margin-bottom: 6px;
+    }
+    .form-sub {
+        font-size: 0.875rem;
+        color: var(--text-muted);
+        margin-bottom: 30px;
+    }
+
+    /* ── Fields ──────────────────────────────────── */
+    .field-group { margin-bottom: 18px; }
+    .field-label {
+        display: flex; align-items: center; justify-content: space-between;
+        font-size: 0.82rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-bottom: 7px;
+    }
+    .field-label a { color: var(--primary-light); font-weight: 600; text-decoration: none; font-size: 0.8rem; }
+    .field-label a:hover { text-decoration: underline; }
+
+    .input-wrap { position: relative; }
+    .input-icon {
+        position: absolute; left: 13px; top: 50%; transform: translateY(-50%);
+        color: var(--text-muted); font-size: 0.95rem; pointer-events: none;
+    }
+    .field-input {
+        width: 100%;
+        border: 1.5px solid var(--border);
+        border-radius: 10px;
+        padding: 12px 14px 12px 40px;
+        font-family: 'DM Sans', sans-serif;
+        font-size: 0.9rem;
+        color: var(--text-primary);
+        background: #fff;
+        outline: none;
+        transition: all 0.2s;
+    }
+    .field-input:focus {
+        border-color: var(--primary-light);
+        box-shadow: 0 0 0 3px rgba(27,79,216,0.1);
+    }
+    .field-input.error { border-color: #FC8181; }
+    .toggle-pass {
+        position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+        color: var(--text-muted); cursor: pointer; background: none; border: none; font-size: 0.95rem;
+    }
+    .error-msg { font-size:0.775rem; color:#E53E3E; margin-top:4px; display:flex; align-items:center; gap:4px; }
+
+    /* ── Remember Me ─────────────────────────────── */
+    .remember-row {
+        display: flex; align-items: center; gap: 8px;
+        margin-bottom: 22px;
+    }
+    .remember-row input { cursor: pointer; }
+    .remember-row label { font-size: 0.85rem; color: var(--text-secondary); cursor: pointer; }
+
+    /* ── Submit ──────────────────────────────────── */
+    .btn-login {
+        width: 100%;
+        background: var(--primary);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        padding: 14px;
+        font-family: 'Syne', sans-serif;
+        font-weight: 800;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: flex; align-items: center; justify-content: center; gap: 8px;
+    }
+    .btn-login:hover {
+        background: var(--primary-light);
+        transform: translateY(-1px);
+        box-shadow: 0 8px 28px rgba(27,79,216,0.4);
+    }
+
+    .social-divider {
+        display: flex; align-items: center; gap: 12px;
+        margin: 20px 0;
+        color: var(--text-muted); font-size: 0.8rem;
+    }
+    .social-divider::before, .social-divider::after {
+        content: ''; flex: 1; height: 1px; background: var(--border);
+    }
+
+    .register-row {
+        text-align: center;
+        font-size: 0.875rem;
+        color: var(--text-secondary);
+        margin-top: 20px;
+        padding-top: 18px;
+        border-top: 1px solid var(--border);
+    }
+    .register-row a { color: var(--primary-light); font-weight: 700; text-decoration: none; }
+    .register-row a:hover { text-decoration: underline; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="auth-page" style="padding-top:0;margin-top:-40px;">
+    <div class="login-layout animate-in">
+
+        <!-- Visual Panel -->
+        <div class="login-visual">
+            <div class="visual-logo">
+                TalentBridge<span style="color:var(--accent);">.</span>
+            </div>
+
+            <div class="visual-content">
+                <div class="visual-title">
+                    Welcome<br>back 👋
+                </div>
+                <p class="visual-sub">
+                    Sign in to continue your job search or manage your talent pipeline.
+                </p>
+                <div class="testimonial-card">
+                    <div class="testimonial-text">
+                        "Found my dream role in 2 weeks. The application process was incredibly smooth and the company matched perfectly with what I was looking for."
+                    </div>
+                    <div class="testimonial-author">
+                        <div class="testimonial-avatar">SL</div>
+                        <div>
+                            <div class="testimonial-name">Sarah L.</div>
+                            <div class="testimonial-role">Software Engineer · Hired via TalentBridge</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="visual-stats">
+                <div class="v-stat">
+                    <div class="v-stat-number">94%</div>
+                    <div class="v-stat-label">Satisfaction rate</div>
+                </div>
+                <div class="v-stat">
+                    <div class="v-stat-number">18d</div>
+                    <div class="v-stat-label">Avg. time to hire</div>
+                </div>
+                <div class="v-stat">
+                    <div class="v-stat-number">2.4k</div>
+                    <div class="v-stat-label">Active listings</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Form Panel -->
+        <div class="login-form-panel">
+            <div class="form-title">Sign in</div>
+            <div class="form-sub">Enter your credentials to access your account</div>
+
+            {% if form.non_field_errors %}
+            <div style="background:#FFF5F5;border:1.5px solid #FCA5A5;border-radius:10px;padding:12px 16px;display:flex;align-items:center;gap:10px;font-size:0.875rem;color:#C53030;margin-bottom:20px;">
+                <i class="bi bi-exclamation-circle-fill"></i>
+                {{ form.non_field_errors.0 }}
+            </div>
+            {% endif %}
+
+            {% if next %}
+            <div style="background:#EFF6FF;border:1.5px solid #BFDBFE;border-radius:10px;padding:12px 16px;display:flex;align-items:center;gap:10px;font-size:0.875rem;color:#1E40AF;margin-bottom:20px;">
+                <i class="bi bi-info-circle-fill"></i>
+                Please sign in to continue.
+            </div>
+            {% endif %}
+
+            <form method="post">
+                {% csrf_token %}
+                {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
+
+                <div class="field-group">
+                    <label class="field-label" for="id_username">Username or Email</label>
+                    <div class="input-wrap">
+                        <i class="input-icon bi bi-person"></i>
+                        <input type="text" name="{{ form.username.html_name }}"
+                            id="id_username"
+                            value="{{ form.username.value|default:'' }}"
+                            placeholder="Enter username"
+                            class="field-input {% if form.username.errors %}error{% endif %}"
+                            autofocus>
+                    </div>
+                    {% if form.username.errors %}
+                    <div class="error-msg"><i class="bi bi-exclamation-circle"></i>{{ form.username.errors.0 }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="field-group">
+                    <label class="field-label" for="id_password">
+                        Password
+                        <a href="#">Forgot password?</a>
+                    </label>
+                    <div class="input-wrap">
+                        <i class="input-icon bi bi-lock"></i>
+                        <input type="password" name="{{ form.password.html_name }}"
+                            id="id_password"
+                            placeholder="Enter password"
+                            class="field-input {% if form.password.errors %}error{% endif %}">
+                        <button type="button" class="toggle-pass" onclick="togglePassword('id_password', this)">
+                            <i class="bi bi-eye"></i>
+                        </button>
+                    </div>
+                    {% if form.password.errors %}
+                    <div class="error-msg"><i class="bi bi-exclamation-circle"></i>{{ form.password.errors.0 }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="remember-row">
+                    <input type="checkbox" name="remember_me" id="remember_me">
+                    <label for="remember_me">Keep me signed in for 30 days</label>
+                </div>
+
+                <button type="submit" class="btn-login">
+                    <i class="bi bi-box-arrow-in-right"></i>Sign In
+                </button>
+            </form>
+
+            <div class="register-row">
+                Don't have an account? <a href="{% url 'register' %}">Create one free →</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function togglePassword(id, btn) {
+    const inp = document.getElementById(id);
+    const isPassword = inp.type === 'password';
+    inp.type = isPassword ? 'text' : 'password';
+    btn.innerHTML = `<i class="bi bi-eye${isPassword ? '-slash' : ''}"></i>`;
+}
+</script>
+{% endblock %}

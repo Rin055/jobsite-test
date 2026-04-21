@@ -1,0 +1,422 @@
+{% extends 'base.html' %}
+{% block title %}Create Account — TalentBridge{% endblock %}
+
+{% block extra_css %}
+<style>
+    body { background: linear-gradient(135deg, #0A2463 0%, #1B3FA0 40%, #F8FAFF 100%); }
+
+    .auth-page {
+        min-height: calc(100vh - var(--nav-height));
+        display: flex; align-items: center;
+        padding: 40px 0;
+    }
+    .auth-layout {
+        display: grid;
+        grid-template-columns: 1fr 480px;
+        gap: 48px;
+        align-items: center;
+        max-width: 960px;
+        margin: 0 auto;
+        width: 100%;
+        padding: 0 20px;
+    }
+    @media (max-width: 768px) {
+        .auth-layout { grid-template-columns: 1fr; }
+        .auth-left { display: none; }
+    }
+
+    /* ── Left Panel ──────────────────────────────── */
+    .auth-left {
+        color: white;
+        padding-right: 20px;
+    }
+    .auth-left h2 {
+        font-family: 'Syne', sans-serif;
+        font-weight: 800;
+        font-size: 2.4rem;
+        line-height: 1.15;
+        margin-bottom: 16px;
+    }
+    .auth-left p {
+        color: rgba(255,255,255,0.75);
+        font-size: 1rem;
+        line-height: 1.7;
+        margin-bottom: 32px;
+    }
+    .trust-items { display: flex; flex-direction: column; gap: 16px; }
+    .trust-item {
+        display: flex; align-items: center; gap: 14px;
+    }
+    .trust-icon {
+        width: 42px; height: 42px;
+        background: rgba(255,255,255,0.1);
+        border: 1px solid rgba(255,255,255,0.2);
+        border-radius: 10px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1rem;
+        color: var(--accent);
+        flex-shrink: 0;
+    }
+    .trust-text { font-size: 0.9rem; color: rgba(255,255,255,0.85); }
+    .trust-text strong { color: #fff; font-weight: 600; }
+
+    /* ── Auth Card ───────────────────────────────── */
+    .auth-card {
+        background: #fff;
+        border-radius: 24px;
+        padding: 40px;
+        box-shadow: 0 32px 80px rgba(10,36,99,0.3);
+    }
+    .auth-card-title {
+        font-family: 'Syne', sans-serif;
+        font-weight: 800;
+        font-size: 1.6rem;
+        color: var(--text-primary);
+        margin-bottom: 6px;
+    }
+    .auth-card-sub {
+        font-size: 0.875rem;
+        color: var(--text-muted);
+        margin-bottom: 28px;
+    }
+
+    /* ── Role Toggle ─────────────────────────────── */
+    .role-toggle {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        margin-bottom: 24px;
+        background: var(--surface);
+        border: 1.5px solid var(--border);
+        border-radius: 12px;
+        padding: 6px;
+    }
+    .role-btn {
+        padding: 11px;
+        border-radius: 8px;
+        text-align: center;
+        cursor: pointer;
+        border: none;
+        background: transparent;
+        transition: all 0.2s;
+        display: flex; align-items: center; justify-content: center; gap: 7px;
+    }
+    .role-btn.active {
+        background: var(--primary);
+        color: white;
+        box-shadow: 0 4px 12px rgba(10,36,99,0.25);
+    }
+    .role-btn:not(.active) { color: var(--text-secondary); }
+    .role-btn:not(.active):hover { background: var(--border); }
+    .role-btn-label { font-weight: 700; font-size: 0.875rem; }
+
+    /* ── Fields ──────────────────────────────────── */
+    .field-group { margin-bottom: 16px; }
+    .field-label {
+        display: block;
+        font-size: 0.82rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-bottom: 6px;
+    }
+    .field-input {
+        width: 100%;
+        border: 1.5px solid var(--border);
+        border-radius: 10px;
+        padding: 11px 14px;
+        font-family: 'DM Sans', sans-serif;
+        font-size: 0.9rem;
+        color: var(--text-primary);
+        background: #fff;
+        outline: none;
+        transition: all 0.2s;
+    }
+    .field-input:focus {
+        border-color: var(--primary-light);
+        box-shadow: 0 0 0 3px rgba(27,79,216,0.1);
+    }
+    .field-input.has-icon { padding-left: 40px; }
+    .input-wrap { position: relative; }
+    .input-icon {
+        position: absolute;
+        left: 13px; top: 50%; transform: translateY(-50%);
+        color: var(--text-muted); font-size: 0.95rem;
+        pointer-events: none;
+    }
+    .toggle-pass {
+        position: absolute;
+        right: 13px; top: 50%; transform: translateY(-50%);
+        color: var(--text-muted);
+        cursor: pointer;
+        background: none; border: none;
+        font-size: 0.95rem;
+    }
+    .error-msg {
+        font-size: 0.775rem; color: #E53E3E;
+        margin-top: 4px; display: flex; align-items: center; gap: 4px;
+    }
+
+    /* ── Password Strength ───────────────────────── */
+    .pwd-strength {
+        margin-top: 6px;
+        display: flex; gap: 4px; align-items: center;
+    }
+    .pwd-bar {
+        flex: 1; height: 3px; border-radius: 10px;
+        background: var(--border); transition: background 0.3s;
+    }
+    .pwd-bar.weak   { background: #EF4444; }
+    .pwd-bar.medium { background: #F59E0B; }
+    .pwd-bar.strong { background: #22C55E; }
+    .pwd-label {
+        font-size: 0.72rem; font-weight: 600; color: var(--text-muted);
+        margin-left: 4px; white-space: nowrap;
+    }
+
+    /* ── Terms ───────────────────────────────────── */
+    .terms-check {
+        display: flex; gap: 10px; align-items: flex-start;
+        margin: 18px 0;
+    }
+    .terms-check input { margin-top: 3px; cursor: pointer; }
+    .terms-check label { font-size: 0.82rem; color: var(--text-secondary); line-height: 1.5; cursor: pointer; }
+    .terms-check a { color: var(--primary-light); font-weight: 600; }
+
+    /* ── Submit ──────────────────────────────────── */
+    .btn-register {
+        width: 100%;
+        background: var(--primary);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        padding: 14px;
+        font-family: 'Syne', sans-serif;
+        font-weight: 800;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: flex; align-items: center; justify-content: center; gap: 8px;
+    }
+    .btn-register:hover {
+        background: var(--primary-light);
+        transform: translateY(-1px);
+        box-shadow: 0 8px 28px rgba(27,79,216,0.4);
+    }
+
+    .divider-row {
+        display: flex; align-items: center; gap: 12px;
+        margin: 20px 0;
+        color: var(--text-muted);
+        font-size: 0.8rem;
+    }
+    .divider-row::before, .divider-row::after {
+        content: ''; flex: 1; height: 1px; background: var(--border);
+    }
+
+    .signin-row {
+        text-align: center;
+        font-size: 0.875rem;
+        color: var(--text-secondary);
+        margin-top: 18px;
+    }
+    .signin-row a { color: var(--primary-light); font-weight: 700; text-decoration: none; }
+    .signin-row a:hover { text-decoration: underline; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="auth-page" style="padding-top:0;">
+    <div class="auth-layout animate-in">
+
+        <!-- Left Panel -->
+        <div class="auth-left">
+            <div style="color:var(--accent);font-size:0.75rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:12px;">
+                <i class="bi bi-lightning-fill me-1"></i>Join TalentBridge
+            </div>
+            <h2>Your Career Journey Starts Here</h2>
+            <p>Connect with thousands of companies and find work that truly excites you. Or post roles and discover exceptional talent.</p>
+
+            <div class="trust-items">
+                <div class="trust-item">
+                    <div class="trust-icon"><i class="bi bi-briefcase-fill"></i></div>
+                    <div class="trust-text"><strong>10,000+ Active Jobs</strong><br>Updated daily across all industries</div>
+                </div>
+                <div class="trust-item">
+                    <div class="trust-icon"><i class="bi bi-building"></i></div>
+                    <div class="trust-text"><strong>850+ Hiring Companies</strong><br>From startups to Fortune 500s</div>
+                </div>
+                <div class="trust-item">
+                    <div class="trust-icon"><i class="bi bi-shield-check-fill"></i></div>
+                    <div class="trust-text"><strong>Free to Use</strong><br>No hidden fees, ever</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Auth Card -->
+        <div class="auth-card animate-in animate-delay-2">
+            <div class="auth-card-title">Create your account</div>
+            <div class="auth-card-sub">It's free and takes less than a minute</div>
+
+            {% if form.non_field_errors %}
+            <div class="alert-custom alert-error-custom mb-4">
+                <i class="bi bi-exclamation-circle-fill"></i>{{ form.non_field_errors.0 }}
+            </div>
+            {% endif %}
+
+            <!-- Role Toggle -->
+            <div class="role-toggle" id="roleToggle">
+                <button type="button" class="role-btn active" onclick="setRole('jobseeker', this)">
+                    <i class="bi bi-person-fill"></i>
+                    <span class="role-btn-label">Job Seeker</span>
+                </button>
+                <button type="button" class="role-btn" onclick="setRole('employer', this)">
+                    <i class="bi bi-building"></i>
+                    <span class="role-btn-label">Employer</span>
+                </button>
+            </div>
+
+            <form method="post">
+                {% csrf_token %}
+                <input type="hidden" name="role" id="roleInput" value="jobseeker">
+
+                <div class="row g-3 mb-0">
+                    <div class="col-6">
+                        <div class="field-group">
+                            <label class="field-label">First Name</label>
+                            <div class="input-wrap">
+                                <i class="input-icon bi bi-person"></i>
+                                <input type="text" name="{{ form.first_name.html_name }}"
+                                    value="{{ form.first_name.value|default:'' }}"
+                                    placeholder="Jane" class="field-input has-icon">
+                            </div>
+                            {% if form.first_name.errors %}<div class="error-msg"><i class="bi bi-exclamation-circle"></i>{{ form.first_name.errors.0 }}</div>{% endif %}
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="field-group">
+                            <label class="field-label">Last Name</label>
+                            <div class="input-wrap">
+                                <input type="text" name="{{ form.last_name.html_name }}"
+                                    value="{{ form.last_name.value|default:'' }}"
+                                    placeholder="Smith" class="field-input">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="field-group">
+                    <label class="field-label">Username</label>
+                    <div class="input-wrap">
+                        <i class="input-icon bi bi-at"></i>
+                        <input type="text" name="{{ form.username.html_name }}"
+                            value="{{ form.username.value|default:'' }}"
+                            placeholder="janesmith" class="field-input has-icon
+                            {% if form.username.errors %}error{% endif %}">
+                    </div>
+                    {% if form.username.errors %}<div class="error-msg"><i class="bi bi-exclamation-circle"></i>{{ form.username.errors.0 }}</div>{% endif %}
+                </div>
+
+                <div class="field-group">
+                    <label class="field-label">Email Address</label>
+                    <div class="input-wrap">
+                        <i class="input-icon bi bi-envelope"></i>
+                        <input type="email" name="{{ form.email.html_name }}"
+                            value="{{ form.email.value|default:'' }}"
+                            placeholder="jane@example.com" class="field-input has-icon
+                            {% if form.email.errors %}error{% endif %}">
+                    </div>
+                    {% if form.email.errors %}<div class="error-msg"><i class="bi bi-exclamation-circle"></i>{{ form.email.errors.0 }}</div>{% endif %}
+                </div>
+
+                <div class="field-group">
+                    <label class="field-label">Password</label>
+                    <div class="input-wrap">
+                        <i class="input-icon bi bi-lock"></i>
+                        <input type="password" name="{{ form.password1.html_name }}"
+                            placeholder="Create a strong password"
+                            class="field-input has-icon {% if form.password1.errors %}error{% endif %}"
+                            id="pwd1" oninput="checkStrength(this.value)">
+                        <button type="button" class="toggle-pass" onclick="togglePassword('pwd1', this)">
+                            <i class="bi bi-eye"></i>
+                        </button>
+                    </div>
+                    <div class="pwd-strength">
+                        <div class="pwd-bar" id="bar1"></div>
+                        <div class="pwd-bar" id="bar2"></div>
+                        <div class="pwd-bar" id="bar3"></div>
+                        <span class="pwd-label" id="pwdLabel"></span>
+                    </div>
+                    {% if form.password1.errors %}<div class="error-msg"><i class="bi bi-exclamation-circle"></i>{{ form.password1.errors.0 }}</div>{% endif %}
+                </div>
+
+                <div class="field-group">
+                    <label class="field-label">Confirm Password</label>
+                    <div class="input-wrap">
+                        <i class="input-icon bi bi-lock-fill"></i>
+                        <input type="password" name="{{ form.password2.html_name }}"
+                            placeholder="Confirm password"
+                            class="field-input has-icon {% if form.password2.errors %}error{% endif %}"
+                            id="pwd2">
+                        <button type="button" class="toggle-pass" onclick="togglePassword('pwd2', this)">
+                            <i class="bi bi-eye"></i>
+                        </button>
+                    </div>
+                    {% if form.password2.errors %}<div class="error-msg"><i class="bi bi-exclamation-circle"></i>{{ form.password2.errors.0 }}</div>{% endif %}
+                </div>
+
+                <div class="terms-check">
+                    <input type="checkbox" id="terms" required>
+                    <label for="terms">
+                        I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>.
+                        I understand my data will be used to facilitate job applications.
+                    </label>
+                </div>
+
+                <button type="submit" class="btn-register">
+                    <i class="bi bi-person-plus-fill"></i>
+                    Create Account — It's Free
+                </button>
+            </form>
+
+            <div class="signin-row">
+                Already have an account? <a href="{% url 'login' %}">Sign in</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function setRole(role, btn) {
+    document.querySelectorAll('.role-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('roleInput').value = role;
+}
+
+function togglePassword(id, btn) {
+    const inp = document.getElementById(id);
+    const isPassword = inp.type === 'password';
+    inp.type = isPassword ? 'text' : 'password';
+    btn.innerHTML = `<i class="bi bi-eye${isPassword ? '-slash' : ''}"></i>`;
+}
+
+function checkStrength(val) {
+    const bars = [document.getElementById('bar1'), document.getElementById('bar2'), document.getElementById('bar3')];
+    const label = document.getElementById('pwdLabel');
+    let score = 0;
+    if (val.length >= 8) score++;
+    if (/[A-Z]/.test(val) && /[a-z]/.test(val)) score++;
+    if (/[0-9]/.test(val) && /[^A-Za-z0-9]/.test(val)) score++;
+
+    bars.forEach((b, i) => {
+        b.className = 'pwd-bar';
+        if (i < score) {
+            b.classList.add(score === 1 ? 'weak' : score === 2 ? 'medium' : 'strong');
+        }
+    });
+    label.textContent = val.length === 0 ? '' : score === 1 ? 'Weak' : score === 2 ? 'Medium' : 'Strong';
+    label.style.color = score === 1 ? '#EF4444' : score === 2 ? '#F59E0B' : '#22C55E';
+}
+</script>
+{% endblock %}

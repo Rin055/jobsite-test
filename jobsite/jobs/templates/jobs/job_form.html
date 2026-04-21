@@ -1,0 +1,515 @@
+{% extends 'base.html' %}
+{% block title %}{% if form.instance.pk %}Edit Job{% else %}Post a New Job{% endif %} — TalentBridge{% endblock %}
+
+{% block extra_css %}
+<style>
+    .form-container {
+        max-width: 820px;
+        margin: 0 auto;
+    }
+
+    .form-header-card {
+        background: linear-gradient(135deg, var(--primary) 0%, #1B3FA0 100%);
+        border-radius: var(--radius-lg);
+        padding: 36px 40px;
+        margin-bottom: 28px;
+        position: relative;
+        overflow: hidden;
+    }
+    .form-header-card::before {
+        content: '';
+        position: absolute;
+        top: -40%; right: -5%;
+        width: 250px; height: 250px;
+        background: radial-gradient(circle, rgba(60,239,180,0.15) 0%, transparent 70%);
+        pointer-events: none;
+    }
+
+    /* ── Form Cards ──────────────────────────────── */
+    .form-card {
+        background: #fff;
+        border: 1.5px solid var(--border);
+        border-radius: var(--radius-lg);
+        overflow: hidden;
+        margin-bottom: 20px;
+    }
+    .form-card-header {
+        padding: 20px 28px;
+        border-bottom: 1.5px solid var(--border);
+        display: flex; align-items: center; gap: 12px;
+        background: var(--surface);
+    }
+    .card-header-icon {
+        width: 38px; height: 38px;
+        background: linear-gradient(135deg, var(--primary), var(--primary-light));
+        border-radius: 10px;
+        display: flex; align-items: center; justify-content: center;
+        color: white; font-size: 0.95rem;
+    }
+    .form-card-body { padding: 28px; }
+
+    /* ── Custom Form Fields ──────────────────────── */
+    .field-group { margin-bottom: 22px; }
+    .field-group:last-child { margin-bottom: 0; }
+
+    .field-label {
+        display: block;
+        font-size: 0.825rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        letter-spacing: 0.01em;
+        margin-bottom: 7px;
+    }
+    .field-label .required { color: #E53E3E; margin-left: 3px; }
+    .field-hint {
+        font-size: 0.775rem;
+        color: var(--text-muted);
+        font-weight: 400;
+        margin-left: 4px;
+    }
+
+    .field-input {
+        width: 100%;
+        border: 1.5px solid var(--border);
+        border-radius: 10px;
+        padding: 11px 14px;
+        font-family: 'DM Sans', sans-serif;
+        font-size: 0.9rem;
+        color: var(--text-primary);
+        background: #fff;
+        outline: none;
+        transition: all 0.2s;
+        line-height: 1.5;
+    }
+    .field-input:focus {
+        border-color: var(--primary-light);
+        box-shadow: 0 0 0 3px rgba(27,79,216,0.1);
+    }
+    .field-input::placeholder { color: var(--text-muted); }
+
+    select.field-input {
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%238A96A3' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 14px center;
+        cursor: pointer;
+    }
+
+    textarea.field-input { resize: vertical; min-height: 140px; }
+
+    .field-input.error { border-color: #FC8181; box-shadow: 0 0 0 3px rgba(252,129,129,0.15); }
+    .error-msg {
+        font-size: 0.775rem;
+        color: #E53E3E;
+        margin-top: 5px;
+        display: flex; align-items: center; gap: 4px;
+    }
+
+    /* ── Salary Row ──────────────────────────────── */
+    .salary-row {
+        display: flex; gap: 12px; align-items: center;
+    }
+    .salary-input-wrap { position: relative; flex: 1; }
+    .salary-symbol {
+        position: absolute;
+        left: 12px; top: 50%; transform: translateY(-50%);
+        color: var(--text-muted);
+        font-size: 0.9rem;
+        font-weight: 600;
+    }
+    .salary-input-wrap .field-input { padding-left: 28px; }
+    .salary-sep {
+        color: var(--text-muted);
+        font-size: 0.875rem;
+        font-weight: 500;
+        white-space: nowrap;
+    }
+
+    /* ── Character Counter ───────────────────────── */
+    .char-counter {
+        text-align: right;
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        margin-top: 4px;
+    }
+
+    /* ── Checkbox Toggle ─────────────────────────── */
+    .toggle-wrap {
+        display: flex; align-items: center; justify-content: space-between;
+        padding: 14px 16px;
+        border: 1.5px solid var(--border);
+        border-radius: 10px;
+        cursor: pointer;
+        transition: all 0.2s;
+        background: #fff;
+    }
+    .toggle-wrap:hover { border-color: var(--primary-light); background: var(--surface); }
+    .toggle-info { flex: 1; }
+    .toggle-info div:first-child { font-weight: 600; font-size: 0.9rem; color: var(--text-primary); }
+    .toggle-info div:last-child { font-size: 0.8rem; color: var(--text-muted); }
+    .toggle-switch {
+        width: 44px; height: 24px;
+        background: var(--border);
+        border-radius: 12px;
+        position: relative;
+        transition: background 0.2s;
+        flex-shrink: 0;
+        cursor: pointer;
+    }
+    .toggle-switch::after {
+        content: '';
+        position: absolute;
+        width: 18px; height: 18px;
+        background: #fff;
+        border-radius: 50%;
+        top: 3px; left: 3px;
+        transition: transform 0.2s;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+    }
+    input[type=checkbox]:checked + .toggle-switch { background: var(--primary-light); }
+    input[type=checkbox]:checked + .toggle-switch::after { transform: translateX(20px); }
+    input[type=checkbox].hidden-check { display: none; }
+
+    /* ── Submit Bar ──────────────────────────────── */
+    .submit-bar {
+        background: #fff;
+        border: 1.5px solid var(--border);
+        border-radius: var(--radius-lg);
+        padding: 22px 28px;
+        display: flex; align-items: center; justify-content: space-between;
+        gap: 16px; flex-wrap: wrap;
+    }
+    .btn-submit-main {
+        background: var(--primary);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        padding: 14px 32px;
+        font-family: 'Syne', sans-serif;
+        font-weight: 700;
+        font-size: 0.95rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: inline-flex; align-items: center; gap: 8px;
+    }
+    .btn-submit-main:hover {
+        background: var(--primary-light);
+        transform: translateY(-1px);
+        box-shadow: 0 8px 24px rgba(27,79,216,0.35);
+    }
+    .btn-cancel {
+        color: var(--text-secondary);
+        text-decoration: none;
+        font-weight: 500;
+        font-size: 0.9rem;
+        padding: 12px 20px;
+        border-radius: 10px;
+        transition: all 0.2s;
+        border: 1.5px solid var(--border);
+        background: transparent;
+    }
+    .btn-cancel:hover { background: var(--surface); color: var(--text-primary); }
+
+    /* ── Progress Steps ──────────────────────────── */
+    .form-steps {
+        display: flex; gap: 0;
+        margin-bottom: 28px;
+        background: #fff;
+        border: 1.5px solid var(--border);
+        border-radius: var(--radius-lg);
+        overflow: hidden;
+    }
+    .form-step {
+        flex: 1;
+        padding: 14px 16px;
+        text-align: center;
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: var(--text-muted);
+        border-right: 1px solid var(--border);
+        display: flex; align-items: center; justify-content: center; gap: 6px;
+    }
+    .form-step:last-child { border-right: none; }
+    .form-step.active { color: var(--primary-light); background: rgba(27,79,216,0.05); }
+    .form-step .step-num {
+        width: 22px; height: 22px;
+        border-radius: 50%;
+        background: var(--surface);
+        border: 1.5px solid var(--border);
+        display: flex; align-items: center; justify-content: center;
+        font-size: 0.7rem;
+        font-weight: 700;
+    }
+    .form-step.active .step-num {
+        background: var(--primary-light);
+        border-color: var(--primary-light);
+        color: white;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="form-container animate-in">
+
+    <!-- Form Header -->
+    <div class="form-header-card">
+        <div class="position-relative">
+            <div class="section-label mb-2">
+                {% if form.instance.pk %}<i class="bi bi-pencil-fill me-1"></i>Edit Listing{% else %}<i class="bi bi-plus-circle-fill me-1"></i>New Listing{% endif %}
+            </div>
+            <h1 style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.8rem;color:#fff;margin-bottom:8px;">
+                {% if form.instance.pk %}Update Job Posting{% else %}Post a New Job{% endif %}
+            </h1>
+            <p style="color:rgba(255,255,255,0.75);font-size:0.9rem;margin:0;">
+                {% if form.instance.pk %}Update the details for this position.
+                {% else %}Fill in the details below to attract the best candidates.{% endif %}
+            </p>
+        </div>
+    </div>
+
+    <!-- Form Errors Summary -->
+    {% if form.non_field_errors %}
+    <div class="alert-custom alert-error-custom mb-4">
+        <i class="bi bi-exclamation-circle-fill"></i>
+        <div>
+            <strong>Please fix the following errors:</strong>
+            {{ form.non_field_errors }}
+        </div>
+    </div>
+    {% endif %}
+
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <!-- Basic Info -->
+        <div class="form-card animate-in animate-delay-1">
+            <div class="form-card-header">
+                <div class="card-header-icon"><i class="bi bi-briefcase-fill"></i></div>
+                <div>
+                    <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.95rem;">Basic Information</div>
+                    <div style="font-size:0.775rem;color:var(--text-muted);">Job title, company, and location details</div>
+                </div>
+            </div>
+            <div class="form-card-body">
+                <div class="row g-4">
+                    <div class="col-12">
+                        <div class="field-group">
+                            <label class="field-label" for="{{ form.title.id_for_label }}">
+                                Job Title <span class="required">*</span>
+                            </label>
+                            <input type="text" name="{{ form.title.html_name }}"
+                                id="{{ form.title.id_for_label }}"
+                                value="{{ form.title.value|default:'' }}"
+                                placeholder="e.g. Senior Frontend Engineer"
+                                class="field-input {% if form.title.errors %}error{% endif %}"
+                                required>
+                            {% if form.title.errors %}
+                                <div class="error-msg"><i class="bi bi-exclamation-circle"></i>{{ form.title.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="field-group">
+                            <label class="field-label" for="{{ form.company.id_for_label }}">
+                                Company Name <span class="required">*</span>
+                            </label>
+                            <input type="text" name="{{ form.company.html_name }}"
+                                id="{{ form.company.id_for_label }}"
+                                value="{{ form.company.value|default:'' }}"
+                                placeholder="e.g. Acme Corporation"
+                                class="field-input {% if form.company.errors %}error{% endif %}"
+                                required>
+                            {% if form.company.errors %}
+                                <div class="error-msg"><i class="bi bi-exclamation-circle"></i>{{ form.company.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="field-group">
+                            <label class="field-label" for="{{ form.location.id_for_label }}">
+                                Location <span class="required">*</span>
+                            </label>
+                            <input type="text" name="{{ form.location.html_name }}"
+                                id="{{ form.location.id_for_label }}"
+                                value="{{ form.location.value|default:'' }}"
+                                placeholder="e.g. New York, NY or Remote"
+                                class="field-input {% if form.location.errors %}error{% endif %}"
+                                required>
+                            {% if form.location.errors %}
+                                <div class="error-msg"><i class="bi bi-exclamation-circle"></i>{{ form.location.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="field-group">
+                            <label class="field-label" for="{{ form.job_type.id_for_label }}">Job Type</label>
+                            <select name="{{ form.job_type.html_name }}" id="{{ form.job_type.id_for_label }}" class="field-input">
+                                <option value="">Select type…</option>
+                                <option value="full_time" {% if form.job_type.value == 'full_time' %}selected{% endif %}>Full-time</option>
+                                <option value="part_time" {% if form.job_type.value == 'part_time' %}selected{% endif %}>Part-time</option>
+                                <option value="contract"  {% if form.job_type.value == 'contract'  %}selected{% endif %}>Contract</option>
+                                <option value="freelance" {% if form.job_type.value == 'freelance' %}selected{% endif %}>Freelance</option>
+                                <option value="internship"{% if form.job_type.value == 'internship'%}selected{% endif %}>Internship</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="field-group">
+                            <label class="field-label" for="{{ form.category.id_for_label }}">Category</label>
+                            <select name="{{ form.category.html_name }}" id="{{ form.category.id_for_label }}" class="field-input">
+                                <option value="">Select category…</option>
+                                {% for cat in form.category.field.queryset %}
+                                    <option value="{{ cat.pk }}" {% if form.category.value|stringformat:"s" == cat.pk|stringformat:"s" %}selected{% endif %}>{{ cat.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="field-group">
+                            <label class="field-label" for="{{ form.experience_level.id_for_label }}">Experience Level</label>
+                            <select name="{{ form.experience_level.html_name }}" id="{{ form.experience_level.id_for_label }}" class="field-input">
+                                <option value="">Select level…</option>
+                                <option value="entry"  {% if form.experience_level.value == 'entry'  %}selected{% endif %}>Entry Level</option>
+                                <option value="mid"    {% if form.experience_level.value == 'mid'    %}selected{% endif %}>Mid Level</option>
+                                <option value="senior" {% if form.experience_level.value == 'senior' %}selected{% endif %}>Senior</option>
+                                <option value="lead"   {% if form.experience_level.value == 'lead'   %}selected{% endif %}>Lead / Manager</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="field-group">
+                            <label class="field-label">
+                                Remote Work
+                            </label>
+                            <label for="{{ form.is_remote.id_for_label }}" class="toggle-wrap">
+                                <div class="toggle-info">
+                                    <div>This is a remote position</div>
+                                    <div>Candidates can work from anywhere</div>
+                                </div>
+                                <input type="checkbox" name="{{ form.is_remote.html_name }}" id="{{ form.is_remote.id_for_label }}"
+                                    class="hidden-check" {% if form.is_remote.value %}checked{% endif %}>
+                                <div class="toggle-switch"></div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Salary -->
+        <div class="form-card animate-in animate-delay-2">
+            <div class="form-card-header">
+                <div class="card-header-icon"><i class="bi bi-cash-stack"></i></div>
+                <div>
+                    <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.95rem;">Compensation</div>
+                    <div style="font-size:0.775rem;color:var(--text-muted);">Salary range (optional but recommended)</div>
+                </div>
+            </div>
+            <div class="form-card-body">
+                <div class="row g-4">
+                    <div class="col-12">
+                        <label class="field-label">Annual Salary Range <span class="field-hint">(Leave blank if not sharing)</span></label>
+                        <div class="salary-row">
+                            <div class="salary-input-wrap">
+                                <span class="salary-symbol">$</span>
+                                <input type="number" name="{{ form.salary_min.html_name }}"
+                                    value="{{ form.salary_min.value|default:'' }}"
+                                    placeholder="Minimum" class="field-input">
+                            </div>
+                            <span class="salary-sep">to</span>
+                            <div class="salary-input-wrap">
+                                <span class="salary-symbol">$</span>
+                                <input type="number" name="{{ form.salary_max.html_name }}"
+                                    value="{{ form.salary_max.value|default:'' }}"
+                                    placeholder="Maximum" class="field-input">
+                            </div>
+                        </div>
+                        <div style="font-size:0.775rem;color:var(--text-muted);margin-top:6px;">
+                            <i class="bi bi-info-circle me-1"></i>Jobs with salary info get 3× more applicants on average.
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="field-group">
+                            <label class="field-label">Application Deadline</label>
+                            <input type="date" name="{{ form.deadline.html_name }}"
+                                value="{{ form.deadline.value|default:'' }}"
+                                class="field-input">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Description -->
+        <div class="form-card animate-in animate-delay-3">
+            <div class="form-card-header">
+                <div class="card-header-icon"><i class="bi bi-file-text-fill"></i></div>
+                <div>
+                    <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.95rem;">Job Details</div>
+                    <div style="font-size:0.775rem;color:var(--text-muted);">Describe the role, requirements, and benefits</div>
+                </div>
+            </div>
+            <div class="form-card-body">
+                <div class="field-group">
+                    <label class="field-label" for="{{ form.description.id_for_label }}">
+                        Job Description <span class="required">*</span>
+                    </label>
+                    <textarea name="{{ form.description.html_name }}" id="{{ form.description.id_for_label }}"
+                        placeholder="Describe the role, day-to-day responsibilities, and what makes this position exciting…"
+                        class="field-input {% if form.description.errors %}error{% endif %}"
+                        style="min-height:180px;" id="descTextarea" oninput="updateCounter(this,'descCount')"
+                        required>{{ form.description.value|default:'' }}</textarea>
+                    <div class="char-counter"><span id="descCount">0</span> characters</div>
+                    {% if form.description.errors %}
+                        <div class="error-msg"><i class="bi bi-exclamation-circle"></i>{{ form.description.errors.0 }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="field-group">
+                    <label class="field-label" for="{{ form.requirements.id_for_label }}">Requirements</label>
+                    <textarea name="{{ form.requirements.html_name }}" id="{{ form.requirements.id_for_label }}"
+                        placeholder="List qualifications, skills, education, and experience required…"
+                        class="field-input"
+                        style="min-height:140px;">{{ form.requirements.value|default:'' }}</textarea>
+                </div>
+
+                <div class="field-group">
+                    <label class="field-label" for="{{ form.benefits.id_for_label }}">Benefits & Perks</label>
+                    <textarea name="{{ form.benefits.html_name }}" id="{{ form.benefits.id_for_label }}"
+                        placeholder="Health insurance, equity, flexible hours, remote work, professional development…"
+                        class="field-input"
+                        style="min-height:120px;">{{ form.benefits.value|default:'' }}</textarea>
+                </div>
+            </div>
+        </div>
+
+        <!-- Submit -->
+        <div class="submit-bar animate-in animate-delay-4">
+            <div style="font-size:0.85rem;color:var(--text-secondary);">
+                <i class="bi bi-shield-check me-1" style="color:var(--primary-light);"></i>
+                Your listing will be live immediately after saving.
+            </div>
+            <div class="d-flex gap-3 align-items-center">
+                <a href="{% url 'job_list' %}" class="btn-cancel">Cancel</a>
+                <button type="submit" class="btn-submit-main">
+                    <i class="bi bi-check-lg"></i>
+                    {% if form.instance.pk %}Update Job{% else %}Publish Job{% endif %}
+                </button>
+            </div>
+        </div>
+
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function updateCounter(el, counterId) {
+    document.getElementById(counterId).textContent = el.value.length;
+}
+// Init on load
+document.querySelectorAll('textarea').forEach(t => {
+    if (t.id === 'descTextarea') updateCounter(t, 'descCount');
+});
+</script>
+{% endblock %}

@@ -1,0 +1,548 @@
+{% extends 'base.html' %}
+{% block title %}{{ job.title }} at {{ job.company }} — TalentBridge{% endblock %}
+
+{% block extra_css %}
+<style>
+    .back-link {
+        display: inline-flex; align-items: center; gap: 6px;
+        color: rgba(255,255,255,0.7);
+        text-decoration: none;
+        font-size: 0.875rem;
+        font-weight: 500;
+        transition: color 0.2s;
+        margin-bottom: 24px;
+    }
+    .back-link:hover { color: var(--accent); }
+
+    .job-hero {
+        background: linear-gradient(135deg, var(--primary) 0%, #1B3FA0 60%, #2255D8 100%);
+        padding: 48px 0 72px;
+        position: relative;
+        overflow: hidden;
+    }
+    .job-hero::before {
+        content: '';
+        position: absolute; inset: 0;
+        background-image: radial-gradient(circle at 80% 50%, rgba(60,239,180,0.1) 0%, transparent 60%);
+        pointer-events: none;
+    }
+
+    .company-logo-lg {
+        width: 72px; height: 72px;
+        border-radius: 16px;
+        background: rgba(255,255,255,0.15);
+        backdrop-filter: blur(10px);
+        border: 1.5px solid rgba(255,255,255,0.25);
+        display: flex; align-items: center; justify-content: center;
+        font-family: 'Syne', sans-serif;
+        font-weight: 800;
+        font-size: 1.4rem;
+        color: #fff;
+        flex-shrink: 0;
+    }
+
+    .hero-badge {
+        display: inline-flex; align-items: center; gap: 5px;
+        background: rgba(255,255,255,0.12);
+        border: 1px solid rgba(255,255,255,0.2);
+        border-radius: 20px;
+        padding: 4px 12px;
+        font-size: 0.775rem;
+        font-weight: 600;
+        color: rgba(255,255,255,0.9);
+        backdrop-filter: blur(8px);
+    }
+
+    /* ── Pull-up Card ────────────────────────────── */
+    .detail-container {
+        margin-top: -48px;
+    }
+
+    .detail-card {
+        background: #fff;
+        border: 1.5px solid var(--border);
+        border-radius: var(--radius-lg);
+        overflow: hidden;
+        box-shadow: var(--shadow-lg);
+    }
+
+    .detail-card-inner { padding: 32px; }
+
+    /* ── Apply Sidebar ───────────────────────────── */
+    .apply-sidebar {
+        background: #fff;
+        border: 1.5px solid var(--border);
+        border-radius: var(--radius-lg);
+        overflow: hidden;
+        box-shadow: var(--shadow-md);
+        position: sticky;
+        top: calc(var(--nav-height) + 20px);
+    }
+
+    .apply-sidebar-header {
+        background: var(--primary);
+        padding: 24px;
+        text-align: center;
+    }
+
+    .btn-apply-main {
+        display: block;
+        background: var(--accent);
+        color: var(--primary) !important;
+        text-align: center;
+        text-decoration: none;
+        font-family: 'Syne', sans-serif;
+        font-weight: 800;
+        font-size: 1rem;
+        padding: 15px;
+        border-radius: 12px;
+        transition: all 0.2s ease;
+        letter-spacing: 0.01em;
+    }
+    .btn-apply-main:hover {
+        background: #2FD9A0;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(60,239,180,0.4);
+    }
+
+    .sidebar-meta { padding: 20px 24px; }
+    .sidebar-meta-item {
+        display: flex; align-items: flex-start; gap: 14px;
+        padding: 14px 0;
+        border-bottom: 1px solid var(--border);
+    }
+    .sidebar-meta-item:last-child { border-bottom: none; }
+    .meta-icon {
+        width: 36px; height: 36px;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 9px;
+        display: flex; align-items: center; justify-content: center;
+        color: var(--primary-light);
+        font-size: 0.95rem;
+        flex-shrink: 0;
+    }
+    .meta-label {
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--text-muted);
+        margin-bottom: 2px;
+    }
+    .meta-value {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+
+    /* ── Content ─────────────────────────────────── */
+    .section-heading {
+        font-family: 'Syne', sans-serif;
+        font-weight: 700;
+        font-size: 1.1rem;
+        color: var(--text-primary);
+        margin-bottom: 16px;
+        display: flex; align-items: center; gap: 8px;
+    }
+    .section-heading::after {
+        content: '';
+        flex: 1;
+        height: 1px;
+        background: var(--border);
+    }
+
+    .job-description-body {
+        font-size: 0.925rem;
+        line-height: 1.8;
+        color: var(--text-secondary);
+    }
+    .job-description-body h3, .job-description-body h4 {
+        font-family: 'Syne', sans-serif;
+        font-weight: 700;
+        font-size: 0.95rem;
+        color: var(--text-primary);
+        margin-top: 24px;
+        margin-bottom: 10px;
+    }
+    .job-description-body ul {
+        padding-left: 20px;
+    }
+    .job-description-body li {
+        margin-bottom: 6px;
+    }
+    .job-description-body p { margin-bottom: 16px; }
+
+    /* ── Owner Actions ───────────────────────────── */
+    .owner-action-bar {
+        background: linear-gradient(135deg, #FFF8E6, #FFF3D4);
+        border: 1.5px solid #FBBF24;
+        border-radius: var(--radius);
+        padding: 16px 20px;
+        display: flex; align-items: center; gap: 14px;
+        margin-bottom: 24px;
+        flex-wrap: wrap;
+    }
+    .btn-edit {
+        background: var(--primary);
+        color: white;
+        border: none;
+        border-radius: 9px;
+        padding: 9px 18px;
+        font-weight: 600;
+        font-size: 0.85rem;
+        text-decoration: none;
+        display: inline-flex; align-items: center; gap: 6px;
+        transition: all 0.2s;
+    }
+    .btn-edit:hover { background: var(--primary-light); color: white; }
+    .btn-delete {
+        background: transparent;
+        color: #C53030;
+        border: 1.5px solid #FC8181;
+        border-radius: 9px;
+        padding: 8px 18px;
+        font-weight: 600;
+        font-size: 0.85rem;
+        text-decoration: none;
+        display: inline-flex; align-items: center; gap: 6px;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    .btn-delete:hover { background: #FFF5F5; }
+
+    /* ── Already Applied ─────────────────────────── */
+    .applied-notice {
+        background: #F0FBF6;
+        border: 1.5px solid #86EFAC;
+        border-radius: var(--radius);
+        padding: 20px;
+        text-align: center;
+        color: #166534;
+    }
+
+    /* ── Related Jobs ────────────────────────────── */
+    .related-card {
+        display: flex; gap: 14px; align-items: center;
+        padding: 16px;
+        border: 1.5px solid var(--border);
+        border-radius: var(--radius);
+        text-decoration: none;
+        color: inherit;
+        transition: all 0.2s;
+        background: #fff;
+    }
+    .related-card:hover {
+        border-color: var(--primary-light);
+        box-shadow: var(--shadow-sm);
+        color: inherit;
+    }
+    .related-logo {
+        width: 40px; height: 40px;
+        background: var(--surface);
+        border-radius: 10px;
+        border: 1px solid var(--border);
+        display: flex; align-items: center; justify-content: center;
+        font-family: 'Syne', sans-serif;
+        font-weight: 700;
+        font-size: 0.85rem;
+        color: var(--primary);
+        flex-shrink: 0;
+    }
+</style>
+{% endblock %}
+
+{% block page_header %}
+<div class="job-hero">
+    <div class="container position-relative">
+        <a href="{% url 'job_list' %}" class="back-link">
+            <i class="bi bi-arrow-left"></i>Back to all jobs
+        </a>
+
+        <div class="d-flex align-items-start gap-4">
+            <div class="company-logo-lg">{{ job.company|slice:":2"|upper }}</div>
+            <div class="flex-grow-1">
+                <div class="d-flex flex-wrap gap-2 mb-3">
+                    {% if job.job_type %}
+                    <span class="hero-badge"><i class="bi bi-clock"></i>{{ job.get_job_type_display }}</span>
+                    {% endif %}
+                    {% if job.is_remote %}
+                    <span class="hero-badge" style="border-color:rgba(60,239,180,0.4);color:var(--accent);"><i class="bi bi-wifi"></i>Remote</span>
+                    {% endif %}
+                    <span class="hero-badge"><i class="bi bi-clock-history"></i>Posted {{ job.created_at|timesince }} ago</span>
+                </div>
+                <h1 style="font-size:clamp(1.6rem,4vw,2.4rem);font-weight:800;color:#fff;margin-bottom:8px;line-height:1.2;">
+                    {{ job.title }}
+                </h1>
+                <div style="color:rgba(255,255,255,0.8);font-size:1rem;">
+                    <i class="bi bi-building me-2"></i>{{ job.company }}
+                    {% if job.location %}
+                    <span class="mx-2">·</span><i class="bi bi-geo-alt me-1"></i>{{ job.location }}
+                    {% endif %}
+                    {% if job.salary_min or job.salary_max %}
+                    <span class="mx-2">·</span><i class="bi bi-currency-dollar me-1"></i>
+                    {% if job.salary_min %}${{ job.salary_min|floatformat:0 }}{% endif %}
+                    {% if job.salary_min and job.salary_max %} – {% endif %}
+                    {% if job.salary_max %}${{ job.salary_max|floatformat:0 }}{% endif %}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="detail-container">
+
+    <!-- Owner Action Bar -->
+    {% if user == job.posted_by %}
+    <div class="owner-action-bar animate-in mb-4">
+        <div style="flex:1;">
+            <div style="font-weight:700;font-size:0.9rem;color:#92400E;">
+                <i class="bi bi-shield-check me-2"></i>You own this listing
+            </div>
+            <div style="font-size:0.8rem;color:#B45309;margin-top:2px;">
+                {{ job.applications.count }} application{% if job.applications.count != 1 %}s{% endif %} received
+            </div>
+        </div>
+        <a href="{% url 'job_edit' job.pk %}" class="btn-edit"><i class="bi bi-pencil"></i>Edit</a>
+        <a href="{% url 'job_applications' job.pk %}" class="btn-edit" style="background:#7C3AED;">
+            <i class="bi bi-people"></i>View Applications
+        </a>
+        <button onclick="document.getElementById('deleteModal').style.display='flex'" class="btn-delete">
+            <i class="bi bi-trash"></i>Delete
+        </button>
+    </div>
+    {% endif %}
+
+    <div class="row g-4">
+
+        <!-- Main Content -->
+        <div class="col-lg-8">
+            <div class="detail-card animate-in">
+                <div class="detail-card-inner">
+
+                    <!-- Description -->
+                    <div class="section-heading">
+                        <i class="bi bi-file-text" style="color:var(--primary-light);"></i>
+                        Job Description
+                    </div>
+                    <div class="job-description-body">
+                        {{ job.description|linebreaks }}
+                    </div>
+
+                    {% if job.requirements %}
+                    <div class="section-heading mt-4">
+                        <i class="bi bi-check2-square" style="color:var(--primary-light);"></i>
+                        Requirements
+                    </div>
+                    <div class="job-description-body">
+                        {{ job.requirements|linebreaks }}
+                    </div>
+                    {% endif %}
+
+                    {% if job.benefits %}
+                    <div class="section-heading mt-4">
+                        <i class="bi bi-gift" style="color:var(--primary-light);"></i>
+                        Benefits & Perks
+                    </div>
+                    <div class="job-description-body">
+                        {{ job.benefits|linebreaks }}
+                    </div>
+                    {% endif %}
+
+                </div>
+
+                <!-- Skills/Tags -->
+                {% if job.skills %}
+                <div style="padding:20px 32px;border-top:1.5px solid var(--border);background:var(--surface);">
+                    <div style="font-size:0.8rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-muted);margin-bottom:12px;">Required Skills</div>
+                    <div style="display:flex;flex-wrap:wrap;gap:8px;">
+                        {% for skill in job.skills.all %}
+                        <span style="background:#fff;border:1.5px solid var(--border);border-radius:8px;padding:5px 14px;font-size:0.825rem;font-weight:500;color:var(--primary);">{{ skill.name }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- About Company -->
+            <div class="detail-card animate-in animate-delay-2 mt-4">
+                <div class="detail-card-inner">
+                    <div class="section-heading">
+                        <i class="bi bi-building" style="color:var(--primary-light);"></i>
+                        About {{ job.company }}
+                    </div>
+                    <div class="d-flex align-items-start gap-3">
+                        <div class="company-logo-lg" style="width:56px;height:56px;font-size:1.1rem;background:var(--surface);color:var(--primary);border:1.5px solid var(--border);">
+                            {{ job.company|slice:":2"|upper }}
+                        </div>
+                        <div>
+                            <div style="font-weight:700;font-size:1rem;margin-bottom:4px;">{{ job.company }}</div>
+                            <p style="color:var(--text-secondary);font-size:0.9rem;line-height:1.7;margin-bottom:0;">
+                                {{ job.company_description|default:"Learn more about this company and their open positions." }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Related Jobs -->
+            {% if related_jobs %}
+            <div class="mt-4 animate-in animate-delay-3">
+                <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:1.1rem;margin-bottom:16px;color:var(--text-primary);">
+                    Similar Jobs
+                </div>
+                <div style="display:flex;flex-direction:column;gap:10px;">
+                    {% for rjob in related_jobs %}
+                    <a href="{% url 'job_detail' rjob.pk %}" class="related-card">
+                        <div class="related-logo">{{ rjob.company|slice:":2"|upper }}</div>
+                        <div class="flex-grow-1">
+                            <div style="font-weight:600;font-size:0.9rem;color:var(--text-primary);">{{ rjob.title }}</div>
+                            <div style="font-size:0.8rem;color:var(--text-muted);">{{ rjob.company }} · {{ rjob.location }}</div>
+                        </div>
+                        <i class="bi bi-arrow-right" style="color:var(--text-muted);"></i>
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <div class="apply-sidebar animate-in animate-delay-1">
+
+                <!-- Apply Header -->
+                <div class="apply-sidebar-header">
+                    <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.25rem;color:#fff;margin-bottom:6px;">
+                        Ready to apply?
+                    </div>
+                    <div style="color:rgba(255,255,255,0.7);font-size:0.85rem;">
+                        Join {{ job.applications.count }} other applicant{% if job.applications.count != 1 %}s{% endif %}
+                    </div>
+                </div>
+
+                <div class="sidebar-meta">
+                    {% if user.is_authenticated %}
+                        {% if user == job.posted_by %}
+                            <div class="applied-notice mb-4" style="background:#EFF6FF;border-color:#93C5FD;color:#1E40AF;">
+                                <i class="bi bi-info-circle me-2"></i>
+                                You posted this job
+                            </div>
+                        {% elif already_applied %}
+                            <div class="applied-notice mb-4">
+                                <i class="bi bi-check-circle-fill me-2" style="font-size:1.1rem;"></i>
+                                <div style="font-weight:700;margin-bottom:4px;">Application Submitted!</div>
+                                <div style="font-size:0.825rem;opacity:0.8;">We'll notify you of any updates.</div>
+                            </div>
+                        {% elif user.profile.role == 'jobseeker' %}
+                            <a href="{% url 'apply' job.pk %}" class="btn-apply-main mb-4">
+                                <i class="bi bi-send me-2"></i>Apply Now
+                            </a>
+                        {% else %}
+                            <div class="applied-notice mb-4" style="background:#FFF8E6;border-color:#FBBF24;color:#92400E;">
+                                <i class="bi bi-info-circle me-2"></i>
+                                Switch to a job seeker account to apply.
+                            </div>
+                        {% endif %}
+                    {% else %}
+                        <a href="{% url 'login' %}?next={{ request.path }}" class="btn-apply-main mb-4">
+                            <i class="bi bi-person-check me-2"></i>Sign In to Apply
+                        </a>
+                        <div style="text-align:center;font-size:0.8rem;color:var(--text-muted);margin-bottom:16px;">
+                            Don't have an account? <a href="{% url 'register' %}" style="color:var(--primary-light);font-weight:600;">Register free</a>
+                        </div>
+                    {% endif %}
+
+                    <!-- Job Details -->
+                    <div class="sidebar-meta-item">
+                        <div class="meta-icon"><i class="bi bi-geo-alt-fill"></i></div>
+                        <div><div class="meta-label">Location</div><div class="meta-value">{{ job.location|default:"Not specified" }}</div></div>
+                    </div>
+                    <div class="sidebar-meta-item">
+                        <div class="meta-icon"><i class="bi bi-clock-fill"></i></div>
+                        <div><div class="meta-label">Job Type</div><div class="meta-value">{{ job.get_job_type_display|default:"Not specified" }}</div></div>
+                    </div>
+                    {% if job.salary_min or job.salary_max %}
+                    <div class="sidebar-meta-item">
+                        <div class="meta-icon"><i class="bi bi-cash-stack"></i></div>
+                        <div>
+                            <div class="meta-label">Salary</div>
+                            <div class="meta-value">
+                                {% if job.salary_min %}${{ job.salary_min|floatformat:0 }}{% endif %}
+                                {% if job.salary_min and job.salary_max %} – {% endif %}
+                                {% if job.salary_max %}${{ job.salary_max|floatformat:0 }}{% endif %}
+                                / yr
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% if job.experience_level %}
+                    <div class="sidebar-meta-item">
+                        <div class="meta-icon"><i class="bi bi-bar-chart-fill"></i></div>
+                        <div><div class="meta-label">Experience</div><div class="meta-value">{{ job.experience_level }}</div></div>
+                    </div>
+                    {% endif %}
+                    <div class="sidebar-meta-item">
+                        <div class="meta-icon"><i class="bi bi-calendar-fill"></i></div>
+                        <div><div class="meta-label">Date Posted</div><div class="meta-value">{{ job.created_at|date:"M d, Y" }}</div></div>
+                    </div>
+                    {% if job.deadline %}
+                    <div class="sidebar-meta-item">
+                        <div class="meta-icon"><i class="bi bi-alarm-fill"></i></div>
+                        <div><div class="meta-label">Deadline</div><div class="meta-value">{{ job.deadline|date:"M d, Y" }}</div></div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Share -->
+                    <div style="margin-top:16px;padding-top:16px;border-top:1.5px solid var(--border);">
+                        <div class="meta-label mb-3">Share This Job</div>
+                        <div style="display:flex;gap:8px;">
+                            <a href="https://www.linkedin.com/shareArticle?url={{ request.build_absolute_uri }}" target="_blank"
+                               style="flex:1;display:flex;align-items:center;justify-content:center;gap:5px;padding:9px;border:1.5px solid var(--border);border-radius:9px;color:var(--text-secondary);text-decoration:none;font-size:0.8rem;font-weight:600;transition:all 0.2s;"
+                               onmouseover="this.style.borderColor='#0077B5';this.style.color='#0077B5'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text-secondary)'">
+                                <i class="bi bi-linkedin"></i>LinkedIn
+                            </a>
+                            <button onclick="navigator.clipboard.writeText(window.location.href);alert('Link copied!')"
+                               style="flex:1;display:flex;align-items:center;justify-content:center;gap:5px;padding:9px;border:1.5px solid var(--border);border-radius:9px;color:var(--text-secondary);background:white;cursor:pointer;font-size:0.8rem;font-weight:600;transition:all 0.2s;"
+                               onmouseover="this.style.borderColor='var(--primary-light)';this.style.color='var(--primary-light)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text-secondary)'">
+                                <i class="bi bi-link-45deg"></i>Copy Link
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Modal -->
+{% if user == job.posted_by %}
+<div id="deleteModal" style="display:none;position:fixed;inset:0;z-index:9999;align-items:center;justify-content:center;background:rgba(10,36,99,0.5);backdrop-filter:blur(4px);">
+    <div style="background:#fff;border-radius:20px;padding:32px;max-width:420px;width:90%;box-shadow:var(--shadow-lg);text-align:center;">
+        <div style="width:56px;height:56px;background:#FFF5F5;border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-size:1.5rem;color:#E53E3E;">
+            <i class="bi bi-trash"></i>
+        </div>
+        <h3 style="font-family:'Syne',sans-serif;font-weight:700;font-size:1.25rem;margin-bottom:8px;">Delete this job?</h3>
+        <p style="color:var(--text-secondary);font-size:0.9rem;margin-bottom:24px;">
+            This action cannot be undone. All associated applications will also be removed.
+        </p>
+        <div style="display:flex;gap:12px;">
+            <button onclick="document.getElementById('deleteModal').style.display='none'"
+                style="flex:1;padding:12px;border:1.5px solid var(--border);border-radius:10px;font-weight:600;font-size:0.9rem;background:#fff;cursor:pointer;">
+                Cancel
+            </button>
+            <form method="post" action="{% url 'job_delete' job.pk %}" style="flex:1;">
+                {% csrf_token %}
+                <button type="submit"
+                    style="width:100%;padding:12px;background:#E53E3E;color:white;border:none;border-radius:10px;font-weight:700;font-size:0.9rem;cursor:pointer;">
+                    Delete Job
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

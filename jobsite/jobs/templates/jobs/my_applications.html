@@ -1,0 +1,434 @@
+{% extends 'base.html' %}
+{% block title %}My Applications — TalentBridge{% endblock %}
+
+{% block extra_css %}
+<style>
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+        gap: 16px;
+        margin-bottom: 28px;
+    }
+    .stat-card {
+        background: #fff;
+        border: 1.5px solid var(--border);
+        border-radius: var(--radius);
+        padding: 20px;
+        display: flex; align-items: center; gap: 14px;
+    }
+    .stat-icon {
+        width: 44px; height: 44px;
+        border-radius: 11px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.1rem;
+        flex-shrink: 0;
+    }
+    .stat-value {
+        font-family: 'Syne', sans-serif;
+        font-weight: 800;
+        font-size: 1.5rem;
+        line-height: 1;
+        margin-bottom: 2px;
+    }
+    .stat-label {
+        font-size: 0.775rem;
+        color: var(--text-muted);
+        font-weight: 500;
+    }
+
+    /* ── Application Cards ───────────────────────── */
+    .application-card {
+        background: #fff;
+        border: 1.5px solid var(--border);
+        border-radius: var(--radius-lg);
+        overflow: hidden;
+        transition: all 0.2s;
+    }
+    .application-card:hover {
+        border-color: var(--primary-light);
+        box-shadow: var(--shadow-md);
+        transform: translateY(-1px);
+    }
+    .app-card-top {
+        padding: 22px 24px;
+        display: flex; gap: 16px; align-items: flex-start;
+    }
+    .app-company-logo {
+        width: 48px; height: 48px;
+        border-radius: 12px;
+        background: linear-gradient(135deg, var(--surface), var(--border));
+        border: 1.5px solid var(--border);
+        display: flex; align-items: center; justify-content: center;
+        font-family: 'Syne', sans-serif;
+        font-weight: 800;
+        font-size: 0.95rem;
+        color: var(--primary);
+        flex-shrink: 0;
+    }
+    .app-job-title {
+        font-family: 'Syne', sans-serif;
+        font-weight: 700;
+        font-size: 1rem;
+        color: var(--text-primary);
+        margin-bottom: 3px;
+        text-decoration: none;
+        transition: color 0.15s;
+    }
+    .app-job-title:hover { color: var(--primary-light); }
+    .app-company-name {
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+        font-weight: 500;
+    }
+
+    .app-meta { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+    .app-meta-pill {
+        display: inline-flex; align-items: center; gap: 4px;
+        font-size: 0.75rem;
+        font-weight: 500;
+        padding: 3px 10px;
+        border-radius: 20px;
+        background: var(--surface);
+        color: var(--text-secondary);
+        border: 1px solid var(--border);
+    }
+
+    /* ── Status Badges ───────────────────────────── */
+    .status-badge {
+        display: inline-flex; align-items: center; gap: 5px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        padding: 5px 12px;
+        border-radius: 20px;
+        white-space: nowrap;
+    }
+    .status-dot {
+        width: 6px; height: 6px;
+        border-radius: 50%;
+        flex-shrink: 0;
+    }
+    .status-pending    { background: #FFF8E6; color: #92400E; }
+    .status-pending .status-dot { background: #F59E0B; }
+    .status-reviewing  { background: rgba(27,79,216,0.08); color: var(--primary-light); }
+    .status-reviewing .status-dot { background: var(--primary-light); }
+    .status-shortlisted{ background: rgba(134,80,250,0.1); color: #6B21D8; }
+    .status-shortlisted .status-dot { background: #8B5CF6; }
+    .status-accepted   { background: #F0FBF6; color: #166534; }
+    .status-accepted .status-dot { background: #22C55E; animation: pulse-green 2s infinite; }
+    .status-rejected   { background: #FFF5F5; color: #C53030; }
+    .status-rejected .status-dot { background: #EF4444; }
+
+    @keyframes pulse-green {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.4; }
+    }
+
+    /* ── Card Footer ─────────────────────────────── */
+    .app-card-footer {
+        padding: 14px 24px;
+        border-top: 1.5px solid var(--border);
+        background: var(--surface);
+        display: flex; align-items: center; justify-content: space-between;
+        gap: 12px; flex-wrap: wrap;
+    }
+    .app-date {
+        font-size: 0.8rem;
+        color: var(--text-muted);
+        display: flex; align-items: center; gap: 5px;
+    }
+
+    .btn-view-job {
+        display: inline-flex; align-items: center; gap: 5px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: var(--primary-light);
+        text-decoration: none;
+        padding: 6px 14px;
+        border: 1.5px solid rgba(27,79,216,0.2);
+        border-radius: 8px;
+        transition: all 0.15s;
+        background: #fff;
+    }
+    .btn-view-job:hover {
+        background: rgba(27,79,216,0.05);
+        border-color: var(--primary-light);
+    }
+
+    /* ── Filter Tabs ─────────────────────────────── */
+    .filter-tabs {
+        display: flex; gap: 6px;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+        background: #fff;
+        border: 1.5px solid var(--border);
+        border-radius: var(--radius);
+        padding: 6px;
+    }
+    .filter-tab {
+        padding: 8px 16px;
+        border-radius: 8px;
+        font-size: 0.825rem;
+        font-weight: 600;
+        cursor: pointer;
+        border: none;
+        background: transparent;
+        color: var(--text-secondary);
+        transition: all 0.15s;
+        display: flex; align-items: center; gap: 6px;
+    }
+    .filter-tab:hover { background: var(--surface); color: var(--primary); }
+    .filter-tab.active { background: var(--primary); color: white; }
+    .tab-count {
+        background: rgba(255,255,255,0.2);
+        border-radius: 20px;
+        padding: 0 7px;
+        font-size: 0.7rem;
+    }
+    .filter-tab:not(.active) .tab-count {
+        background: var(--surface);
+        color: var(--text-muted);
+    }
+
+    /* ── Empty State ─────────────────────────────── */
+    .empty-state {
+        text-align: center;
+        padding: 80px 20px;
+        background: #fff;
+        border: 1.5px solid var(--border);
+        border-radius: var(--radius-lg);
+    }
+    .empty-visual {
+        width: 80px; height: 80px;
+        background: var(--surface);
+        border: 2px dashed var(--border);
+        border-radius: 20px;
+        display: flex; align-items: center; justify-content: center;
+        margin: 0 auto 24px;
+        font-size: 2rem;
+        color: var(--text-muted);
+    }
+
+    /* Timeline indicator */
+    .app-timeline {
+        position: relative;
+        padding: 16px 24px;
+        border-top: 1.5px solid var(--border);
+    }
+    .timeline-bar {
+        height: 4px;
+        background: var(--surface);
+        border-radius: 10px;
+        overflow: hidden;
+        margin-bottom: 8px;
+    }
+    .timeline-fill {
+        height: 100%;
+        border-radius: 10px;
+        background: linear-gradient(90deg, var(--primary-light), var(--accent));
+        transition: width 0.6s ease;
+    }
+    .timeline-labels {
+        display: flex; justify-content: space-between;
+        font-size: 0.7rem;
+        color: var(--text-muted);
+    }
+</style>
+{% endblock %}
+
+{% block page_header %}
+<div class="page-header">
+    <div class="container position-relative">
+        <div class="section-label mb-2"><i class="bi bi-file-text-fill me-1"></i>Dashboard</div>
+        <h1 style="font-family:'Syne',sans-serif;font-weight:800;font-size:2.2rem;color:#fff;margin-bottom:8px;">My Applications</h1>
+        <p style="color:rgba(255,255,255,0.75);font-size:0.95rem;margin:0;">Track your job applications and stay on top of your job search.</p>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+
+    <!-- Stats Grid -->
+    <div class="stats-grid animate-in">
+        <div class="stat-card">
+            <div class="stat-icon" style="background:rgba(27,79,216,0.08);">
+                <i class="bi bi-send-fill" style="color:var(--primary-light);"></i>
+            </div>
+            <div>
+                <div class="stat-value" style="color:var(--primary);">{{ applications|length }}</div>
+                <div class="stat-label">Total Applied</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon" style="background:#FFF8E6;">
+                <i class="bi bi-hourglass-split" style="color:#F59E0B;"></i>
+            </div>
+            <div>
+                <div class="stat-value" style="color:#F59E0B;">{{ pending_count|default:"0" }}</div>
+                <div class="stat-label">Under Review</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon" style="background:rgba(134,80,250,0.1);">
+                <i class="bi bi-star-fill" style="color:#8B5CF6;"></i>
+            </div>
+            <div>
+                <div class="stat-value" style="color:#8B5CF6;">{{ shortlisted_count|default:"0" }}</div>
+                <div class="stat-label">Shortlisted</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon" style="background:#F0FBF6;">
+                <i class="bi bi-check-circle-fill" style="color:#22C55E;"></i>
+            </div>
+            <div>
+                <div class="stat-value" style="color:#22C55E;">{{ accepted_count|default:"0" }}</div>
+                <div class="stat-label">Accepted</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter Tabs -->
+    <div class="filter-tabs animate-in animate-delay-1">
+        <button class="filter-tab active" onclick="filterApps('all', this)">
+            All <span class="tab-count">{{ applications|length }}</span>
+        </button>
+        <button class="filter-tab" onclick="filterApps('pending', this)">
+            Pending <span class="tab-count">{{ pending_count|default:"0" }}</span>
+        </button>
+        <button class="filter-tab" onclick="filterApps('reviewing', this)">
+            Reviewing
+        </button>
+        <button class="filter-tab" onclick="filterApps('shortlisted', this)">
+            Shortlisted
+        </button>
+        <button class="filter-tab" onclick="filterApps('accepted', this)">
+            Accepted
+        </button>
+        <button class="filter-tab" onclick="filterApps('rejected', this)">
+            Rejected
+        </button>
+    </div>
+
+    <!-- Application Cards -->
+    {% if applications %}
+    <div id="appsList" style="display:flex;flex-direction:column;gap:14px;">
+        {% for application in applications %}
+        <div class="application-card animate-in" data-status="{{ application.status }}" style="animation-delay:{{ forloop.counter0 }}0ms">
+            <div class="app-card-top">
+                <!-- Logo -->
+                <div class="app-company-logo">{{ application.job.company|slice:":2"|upper }}</div>
+
+                <!-- Info -->
+                <div class="flex-grow-1">
+                    <div class="d-flex align-items-start justify-content-between gap-2 flex-wrap">
+                        <div>
+                            <a href="{% url 'job_detail' application.job.pk %}" class="app-job-title">
+                                {{ application.job.title }}
+                            </a>
+                            <div class="app-company-name">{{ application.job.company }}</div>
+                        </div>
+                        <span class="status-badge status-{{ application.status|lower }}">
+                            <span class="status-dot"></span>
+                            {{ application.get_status_display }}
+                        </span>
+                    </div>
+
+                    <div class="app-meta">
+                        <span class="app-meta-pill"><i class="bi bi-geo-alt"></i>{{ application.job.location }}</span>
+                        {% if application.job.job_type %}
+                        <span class="app-meta-pill"><i class="bi bi-clock"></i>{{ application.job.get_job_type_display }}</span>
+                        {% endif %}
+                        {% if application.job.salary_min %}
+                        <span class="app-meta-pill"><i class="bi bi-cash"></i>From ${{ application.job.salary_min|floatformat:0 }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Progress Timeline -->
+            <div class="app-timeline">
+                <div class="timeline-bar">
+                    <div class="timeline-fill" style="width:
+                        {% if application.status == 'pending' %}15%
+                        {% elif application.status == 'reviewing' %}40%
+                        {% elif application.status == 'shortlisted' %}70%
+                        {% elif application.status == 'accepted' %}100%
+                        {% elif application.status == 'rejected' %}100%
+                        {% else %}15%{% endif %};
+                        {% if application.status == 'rejected' %}background:#FCA5A5;{% endif %}
+                    "></div>
+                </div>
+                <div class="timeline-labels">
+                    <span>Applied</span>
+                    <span>Reviewing</span>
+                    <span>Shortlisted</span>
+                    <span>Decision</span>
+                </div>
+            </div>
+
+            <div class="app-card-footer">
+                <div class="app-date">
+                    <i class="bi bi-calendar3"></i>
+                    Applied {{ application.applied_at|date:"M d, Y" }}
+                    <span style="margin-left:4px;color:var(--text-muted);">({{ application.applied_at|timesince }} ago)</span>
+                </div>
+                <div class="d-flex gap-2">
+                    {% if application.cover_letter %}
+                    <button onclick="toggleCover('cover_{{ application.pk }}')"
+                        style="background:transparent;border:1.5px solid var(--border);border-radius:8px;padding:6px 12px;font-size:0.775rem;font-weight:600;color:var(--text-secondary);cursor:pointer;">
+                        <i class="bi bi-chat-text"></i>
+                    </button>
+                    {% endif %}
+                    <a href="{% url 'job_detail' application.job.pk %}" class="btn-view-job">
+                        <i class="bi bi-eye"></i>View Job
+                    </a>
+                </div>
+            </div>
+
+            {% if application.cover_letter %}
+            <div id="cover_{{ application.pk }}" style="display:none;padding:16px 24px;border-top:1.5px solid var(--border);background:var(--surface);">
+                <div style="font-size:0.775rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;">Your Cover Letter</div>
+                <p style="font-size:0.875rem;color:var(--text-secondary);line-height:1.7;margin:0;">{{ application.cover_letter|linebreaks }}</p>
+            </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+
+    {% else %}
+    <!-- Empty State -->
+    <div class="empty-state animate-in">
+        <div class="empty-visual"><i class="bi bi-file-text"></i></div>
+        <h3 style="font-family:'Syne',sans-serif;font-weight:700;font-size:1.4rem;margin-bottom:10px;">No applications yet</h3>
+        <p style="color:var(--text-secondary);max-width:340px;margin:0 auto 28px;line-height:1.7;">
+            Start exploring job opportunities and submit your first application to see it here.
+        </p>
+        <a href="{% url 'job_list' %}" style="display:inline-flex;align-items:center;gap:8px;background:var(--primary);color:white;text-decoration:none;padding:13px 28px;border-radius:12px;font-weight:700;font-family:'Syne',sans-serif;transition:all 0.2s;">
+            <i class="bi bi-briefcase"></i>Browse Jobs
+        </a>
+    </div>
+    {% endif %}
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function filterApps(status, btn) {
+    document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.application-card').forEach(card => {
+        if (status === 'all' || card.dataset.status === status) {
+            card.style.display = '';
+        } else {
+            card.style.display = 'none';
+        }
+    });
+}
+
+function toggleCover(id) {
+    const el = document.getElementById(id);
+    el.style.display = el.style.display === 'none' ? 'block' : 'none';
+}
+</script>
+{% endblock %}

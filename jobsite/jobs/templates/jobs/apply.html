@@ -1,0 +1,551 @@
+{% extends 'base.html' %}
+{% block title %}Apply — {{ job.title }} at {{ job.company }} — TalentBridge{% endblock %}
+
+{% block extra_css %}
+<style>
+    .apply-layout {
+        max-width: 980px;
+        margin: 0 auto;
+    }
+
+    .apply-header {
+        background: linear-gradient(135deg, var(--primary) 0%, #1B3FA0 100%);
+        border-radius: var(--radius-lg);
+        padding: 32px 36px;
+        margin-bottom: 28px;
+        display: flex; align-items: center; gap: 20px;
+        position: relative; overflow: hidden;
+    }
+    .apply-header::before {
+        content: '';
+        position: absolute; top: -40%; right: -5%;
+        width: 200px; height: 200px;
+        background: radial-gradient(circle, rgba(60,239,180,0.15) 0%, transparent 70%);
+        pointer-events: none;
+    }
+    .apply-company-logo {
+        width: 60px; height: 60px;
+        border-radius: 14px;
+        background: rgba(255,255,255,0.15);
+        border: 1.5px solid rgba(255,255,255,0.25);
+        display: flex; align-items: center; justify-content: center;
+        font-family: 'Syne', sans-serif;
+        font-weight: 800;
+        font-size: 1.2rem;
+        color: #fff;
+        flex-shrink: 0;
+    }
+
+    /* ── Steps ───────────────────────────────────── */
+    .apply-steps {
+        display: flex; align-items: center;
+        margin-bottom: 28px;
+        background: #fff;
+        border: 1.5px solid var(--border);
+        border-radius: var(--radius-lg);
+        padding: 16px 24px;
+        gap: 0;
+        overflow: hidden;
+    }
+    .apply-step {
+        display: flex; align-items: center; gap: 10px;
+        flex: 1;
+    }
+    .step-circle {
+        width: 32px; height: 32px;
+        border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 0.8rem;
+        font-weight: 700;
+        flex-shrink: 0;
+    }
+    .step-circle.done { background: #D1FAE5; color: #059669; }
+    .step-circle.active { background: var(--primary); color: white; }
+    .step-circle.pending { background: var(--surface); color: var(--text-muted); border: 1.5px solid var(--border); }
+    .step-label { font-size: 0.825rem; font-weight: 600; color: var(--text-muted); }
+    .step-label.active { color: var(--primary); }
+    .step-connector { flex: 1; height: 1px; background: var(--border); margin: 0 12px; }
+
+    /* ── Form ────────────────────────────────────── */
+    .apply-form-card {
+        background: #fff;
+        border: 1.5px solid var(--border);
+        border-radius: var(--radius-lg);
+        overflow: hidden;
+        box-shadow: var(--shadow-sm);
+    }
+
+    .section-divider {
+        padding: 18px 28px;
+        border-bottom: 1.5px solid var(--border);
+        border-top: 1.5px solid var(--border);
+        background: var(--surface);
+        display: flex; align-items: center; gap: 10px;
+        margin-top: 0;
+    }
+    .section-div-icon {
+        width: 32px; height: 32px;
+        background: linear-gradient(135deg, var(--primary), var(--primary-light));
+        border-radius: 8px;
+        display: flex; align-items: center; justify-content: center;
+        color: white; font-size: 0.8rem;
+    }
+    .section-div-label {
+        font-family: 'Syne', sans-serif;
+        font-weight: 700;
+        font-size: 0.9rem;
+        color: var(--text-primary);
+    }
+
+    .form-body { padding: 24px 28px; }
+
+    .field-row { margin-bottom: 20px; }
+    .field-label {
+        display: block;
+        font-size: 0.82rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-bottom: 7px;
+    }
+    .required { color: #E53E3E; margin-left: 2px; }
+    .field-input {
+        width: 100%;
+        border: 1.5px solid var(--border);
+        border-radius: 10px;
+        padding: 11px 14px;
+        font-family: 'DM Sans', sans-serif;
+        font-size: 0.9rem;
+        color: var(--text-primary);
+        background: #fff;
+        outline: none;
+        transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .field-input:focus {
+        border-color: var(--primary-light);
+        box-shadow: 0 0 0 3px rgba(27,79,216,0.1);
+    }
+    textarea.field-input { resize: vertical; min-height: 120px; line-height: 1.6; }
+    .field-hint {
+        font-size: 0.775rem;
+        color: var(--text-muted);
+        margin-top: 5px;
+        display: flex; align-items: center; gap: 4px;
+    }
+
+    /* ── File Upload ─────────────────────────────── */
+    .file-drop-zone {
+        border: 2px dashed var(--border);
+        border-radius: 12px;
+        padding: 32px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.2s;
+        background: var(--surface);
+        position: relative;
+    }
+    .file-drop-zone:hover, .file-drop-zone.drag-over {
+        border-color: var(--primary-light);
+        background: rgba(27,79,216,0.03);
+    }
+    .file-drop-zone input[type=file] {
+        position: absolute; inset: 0; opacity: 0; cursor: pointer;
+    }
+    .file-icon {
+        width: 48px; height: 48px;
+        background: rgba(27,79,216,0.08);
+        border-radius: 12px;
+        display: flex; align-items: center; justify-content: center;
+        margin: 0 auto 12px;
+        font-size: 1.3rem;
+        color: var(--primary-light);
+    }
+    .file-drop-title {
+        font-weight: 600;
+        font-size: 0.9rem;
+        color: var(--text-primary);
+        margin-bottom: 4px;
+    }
+    .file-drop-hint {
+        font-size: 0.8rem;
+        color: var(--text-muted);
+    }
+    .file-drop-hint strong { color: var(--primary-light); }
+
+    /* ── Sidebar Job Summary ─────────────────────── */
+    .job-summary-card {
+        background: #fff;
+        border: 1.5px solid var(--border);
+        border-radius: var(--radius-lg);
+        overflow: hidden;
+        position: sticky;
+        top: calc(var(--nav-height) + 20px);
+    }
+    .job-summary-header {
+        padding: 20px;
+        border-bottom: 1.5px solid var(--border);
+        background: var(--surface);
+    }
+    .job-summary-title {
+        font-family: 'Syne', sans-serif;
+        font-weight: 700;
+        font-size: 0.95rem;
+        margin-bottom: 2px;
+    }
+    .job-summary-body { padding: 16px 20px; }
+    .summary-row {
+        display: flex; align-items: center; gap: 10px;
+        padding: 10px 0;
+        border-bottom: 1px solid var(--border);
+        font-size: 0.85rem;
+    }
+    .summary-row:last-child { border-bottom: none; }
+    .summary-row i { color: var(--primary-light); font-size: 0.95rem; width: 16px; }
+
+    .tips-card {
+        background: linear-gradient(135deg, #EFF6FF, #DBEAFE);
+        border: 1.5px solid #BFDBFE;
+        border-radius: var(--radius-lg);
+        padding: 20px;
+        margin-top: 16px;
+    }
+    .tips-title {
+        font-family: 'Syne', sans-serif;
+        font-weight: 700;
+        font-size: 0.875rem;
+        color: var(--primary);
+        margin-bottom: 12px;
+        display: flex; align-items: center; gap: 6px;
+    }
+    .tip-item {
+        display: flex; gap: 8px;
+        font-size: 0.8rem;
+        color: #1E40AF;
+        margin-bottom: 8px;
+        line-height: 1.5;
+    }
+    .tip-item:last-child { margin-bottom: 0; }
+    .tip-item i { color: var(--primary-light); flex-shrink: 0; margin-top: 2px; }
+
+    /* ── Submit ──────────────────────────────────── */
+    .apply-submit-wrap {
+        padding: 22px 28px;
+        border-top: 1.5px solid var(--border);
+        background: var(--surface);
+        display: flex; align-items: center; justify-content: space-between;
+        gap: 16px; flex-wrap: wrap;
+    }
+    .btn-apply-submit {
+        background: var(--primary);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        padding: 14px 36px;
+        font-family: 'Syne', sans-serif;
+        font-weight: 800;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: inline-flex; align-items: center; gap: 8px;
+    }
+    .btn-apply-submit:hover {
+        background: var(--primary-light);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 28px rgba(27,79,216,0.4);
+    }
+    .privacy-note {
+        font-size: 0.775rem;
+        color: var(--text-muted);
+        display: flex; align-items: center; gap: 5px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="apply-layout">
+    <div class="row g-4">
+
+        <!-- Main Form -->
+        <div class="col-lg-8">
+
+            <!-- Application Header -->
+            <div class="apply-header animate-in">
+                <div class="apply-company-logo">{{ job.company|slice:":2"|upper }}</div>
+                <div class="position-relative">
+                    <div style="font-size:0.775rem;color:rgba(255,255,255,0.65);font-weight:600;letter-spacing:0.06em;text-transform:uppercase;margin-bottom:6px;">
+                        Applying for
+                    </div>
+                    <h1 style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.5rem;color:#fff;margin-bottom:6px;line-height:1.2;">
+                        {{ job.title }}
+                    </h1>
+                    <div style="color:rgba(255,255,255,0.8);font-size:0.9rem;">
+                        {{ job.company }}
+                        {% if job.location %} · <i class="bi bi-geo-alt"></i> {{ job.location }}{% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Progress Steps -->
+            <div class="apply-steps animate-in animate-delay-1">
+                <div class="apply-step">
+                    <div class="step-circle active">1</div>
+                    <div class="step-label active">Your Info</div>
+                </div>
+                <div class="step-connector"></div>
+                <div class="apply-step">
+                    <div class="step-circle pending">2</div>
+                    <div class="step-label">Cover Letter</div>
+                </div>
+                <div class="step-connector"></div>
+                <div class="apply-step">
+                    <div class="step-circle pending">3</div>
+                    <div class="step-label">Review & Submit</div>
+                </div>
+            </div>
+
+            <!-- Application Form -->
+            <div class="apply-form-card animate-in animate-delay-2">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+
+                    <!-- Personal Info -->
+                    <div class="section-divider" style="border-top:none;">
+                        <div class="section-div-icon"><i class="bi bi-person-fill"></i></div>
+                        <div class="section-div-label">Personal Information</div>
+                    </div>
+                    <div class="form-body">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="field-row">
+                                    <label class="field-label">Full Name <span class="required">*</span></label>
+                                    <input type="text" name="{{ form.full_name.html_name }}"
+                                        value="{{ form.full_name.value|default:user.get_full_name }}"
+                                        placeholder="Your full name" class="field-input" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="field-row">
+                                    <label class="field-label">Email Address <span class="required">*</span></label>
+                                    <input type="email" name="{{ form.email.html_name }}"
+                                        value="{{ form.email.value|default:user.email }}"
+                                        placeholder="you@example.com" class="field-input" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="field-row">
+                                    <label class="field-label">Phone Number</label>
+                                    <input type="tel" name="{{ form.phone.html_name }}"
+                                        value="{{ form.phone.value|default:'' }}"
+                                        placeholder="+1 (555) 000-0000" class="field-input">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="field-row">
+                                    <label class="field-label">LinkedIn Profile</label>
+                                    <input type="url" name="{{ form.linkedin.html_name }}"
+                                        value="{{ form.linkedin.value|default:'' }}"
+                                        placeholder="https://linkedin.com/in/…" class="field-input">
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="field-row">
+                                    <label class="field-label">Portfolio / Website</label>
+                                    <input type="url" name="{{ form.portfolio.html_name }}"
+                                        value="{{ form.portfolio.value|default:'' }}"
+                                        placeholder="https://yoursite.com" class="field-input">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Resume -->
+                    <div class="section-divider">
+                        <div class="section-div-icon"><i class="bi bi-file-earmark-person-fill"></i></div>
+                        <div class="section-div-label">Resume / CV</div>
+                    </div>
+                    <div class="form-body">
+                        <div class="field-row">
+                            <label class="field-label">Upload Resume <span class="required">*</span></label>
+                            <div class="file-drop-zone" id="resumeZone">
+                                <input type="file" name="{{ form.resume.html_name }}" accept=".pdf,.doc,.docx"
+                                    id="resumeFile" onchange="showFileName(this,'resumeZone')">
+                                <div class="file-icon"><i class="bi bi-file-earmark-arrow-up"></i></div>
+                                <div class="file-drop-title">Drop your resume here or <strong style="color:var(--primary-light);">browse</strong></div>
+                                <div class="file-drop-hint">Supports PDF, DOC, DOCX — max 5MB</div>
+                            </div>
+                            <div class="field-hint"><i class="bi bi-info-circle"></i>A strong resume increases your chances significantly.</div>
+                        </div>
+                    </div>
+
+                    <!-- Cover Letter -->
+                    <div class="section-divider">
+                        <div class="section-div-icon"><i class="bi bi-chat-text-fill"></i></div>
+                        <div class="section-div-label">Cover Letter</div>
+                    </div>
+                    <div class="form-body">
+                        <div class="field-row">
+                            <label class="field-label">
+                                Cover Letter <span class="required">*</span>
+                            </label>
+                            <textarea name="{{ form.cover_letter.html_name }}"
+                                placeholder="Tell {{ job.company }} why you're the perfect fit for this role. Highlight relevant experience, skills, and why you're excited about this opportunity…"
+                                class="field-input" style="min-height:200px;"
+                                required>{{ form.cover_letter.value|default:'' }}</textarea>
+                            {% if form.cover_letter.errors %}
+                                <div style="color:#E53E3E;font-size:0.8rem;margin-top:5px;">{{ form.cover_letter.errors.0 }}</div>
+                            {% endif %}
+                            <div class="field-hint"><i class="bi bi-lightbulb"></i>Aim for 200–400 words. Be specific about why this role excites you.</div>
+                        </div>
+
+                        {% if form.extra_fields %}
+                        <!-- Additional Questions -->
+                        <div style="margin-top:24px;padding-top:20px;border-top:1.5px solid var(--border);">
+                            <div style="font-weight:700;font-size:0.875rem;margin-bottom:16px;">Additional Questions</div>
+                            {% for field in form %}
+                                {% if field.name not in 'full_name,email,phone,linkedin,portfolio,resume,cover_letter' %}
+                                <div class="field-row">
+                                    <label class="field-label">{{ field.label }}</label>
+                                    {{ field }}
+                                </div>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Submit -->
+                    <div class="apply-submit-wrap">
+                        <div class="privacy-note">
+                            <i class="bi bi-shield-lock-fill" style="color:var(--primary-light);"></i>
+                            Your info is shared only with {{ job.company }}
+                        </div>
+                        <div class="d-flex gap-3 align-items-center">
+                            <a href="{% url 'job_detail' job.pk %}" style="color:var(--text-secondary);text-decoration:none;font-size:0.875rem;font-weight:500;">Cancel</a>
+                            <button type="submit" class="btn-apply-submit">
+                                <i class="bi bi-send-fill"></i>Submit Application
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+
+            <!-- Job Summary -->
+            <div class="job-summary-card animate-in animate-delay-1">
+                <div class="job-summary-header">
+                    <div class="job-summary-title">Job Summary</div>
+                    <div style="font-size:0.8rem;color:var(--text-muted);">{{ job.company }}</div>
+                </div>
+                <div class="job-summary-body">
+                    <div class="summary-row">
+                        <i class="bi bi-briefcase-fill"></i>
+                        <div>
+                            <div style="font-size:0.72rem;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:0.04em;">Position</div>
+                            <div style="font-weight:600;font-size:0.875rem;">{{ job.title }}</div>
+                        </div>
+                    </div>
+                    <div class="summary-row">
+                        <i class="bi bi-geo-alt-fill"></i>
+                        <div>
+                            <div style="font-size:0.72rem;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:0.04em;">Location</div>
+                            <div style="font-weight:600;font-size:0.875rem;">{{ job.location|default:"Not specified" }}</div>
+                        </div>
+                    </div>
+                    <div class="summary-row">
+                        <i class="bi bi-clock-fill"></i>
+                        <div>
+                            <div style="font-size:0.72rem;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:0.04em;">Job Type</div>
+                            <div style="font-weight:600;font-size:0.875rem;">{{ job.get_job_type_display|default:"Not specified" }}</div>
+                        </div>
+                    </div>
+                    {% if job.salary_min or job.salary_max %}
+                    <div class="summary-row">
+                        <i class="bi bi-cash"></i>
+                        <div>
+                            <div style="font-size:0.72rem;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:0.04em;">Salary</div>
+                            <div style="font-weight:700;font-size:0.875rem;color:var(--primary);">
+                                {% if job.salary_min %}${{ job.salary_min|floatformat:0 }}{% endif %}
+                                {% if job.salary_min and job.salary_max %} – {% endif %}
+                                {% if job.salary_max %}${{ job.salary_max|floatformat:0 }}{% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    <div class="summary-row">
+                        <i class="bi bi-people-fill"></i>
+                        <div>
+                            <div style="font-size:0.72rem;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:0.04em;">Applicants</div>
+                            <div style="font-weight:600;font-size:0.875rem;">{{ job.applications.count }} applied so far</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tips Card -->
+            <div class="tips-card animate-in animate-delay-2">
+                <div class="tips-title">
+                    <i class="bi bi-lightbulb-fill" style="color:#3B82F6;"></i>
+                    Application Tips
+                </div>
+                <div class="tip-item">
+                    <i class="bi bi-check-circle-fill"></i>
+                    Tailor your cover letter to this specific role and company.
+                </div>
+                <div class="tip-item">
+                    <i class="bi bi-check-circle-fill"></i>
+                    Highlight 2–3 concrete achievements with measurable results.
+                </div>
+                <div class="tip-item">
+                    <i class="bi bi-check-circle-fill"></i>
+                    Keep your resume clean, concise, and under 2 pages.
+                </div>
+                <div class="tip-item">
+                    <i class="bi bi-check-circle-fill"></i>
+                    Double-check all contact info before submitting.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function showFileName(input, zoneId) {
+    const zone = document.getElementById(zoneId);
+    if (input.files.length > 0) {
+        const file = input.files[0];
+        zone.innerHTML = `
+            <input type="file" name="${input.name}" accept=".pdf,.doc,.docx" style="position:absolute;inset:0;opacity:0;cursor:pointer;" onchange="showFileName(this,'${zoneId}')">
+            <div style="display:flex;align-items:center;gap:14px;justify-content:center;">
+                <div style="width:44px;height:44px;background:#D1FAE5;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;color:#059669;">
+                    <i class="bi bi-file-earmark-check-fill"></i>
+                </div>
+                <div style="text-align:left;">
+                    <div style="font-weight:600;font-size:0.9rem;">${file.name}</div>
+                    <div style="font-size:0.775rem;color:var(--text-muted);">${(file.size/1024/1024).toFixed(2)} MB · Click to change</div>
+                </div>
+            </div>
+        `;
+        zone.style.borderColor = '#86EFAC';
+        zone.style.background = '#F0FBF6';
+    }
+}
+
+// Drag & drop
+const zone = document.getElementById('resumeZone');
+if (zone) {
+    zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag-over'); });
+    zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
+    zone.addEventListener('drop', e => {
+        e.preventDefault();
+        zone.classList.remove('drag-over');
+        const input = zone.querySelector('input[type=file]');
+        input.files = e.dataTransfer.files;
+        showFileName(input, 'resumeZone');
+    });
+}
+</script>
+{% endblock %}

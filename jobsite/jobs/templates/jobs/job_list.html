@@ -1,0 +1,582 @@
+{% extends 'base.html' %}
+{% block title %}Browse Jobs — TalentBridge{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ── Hero Search ─────────────────────────────── */
+    .hero-search {
+        background: linear-gradient(135deg, var(--primary) 0%, #1B3FA0 55%, #2255D8 100%);
+        padding: 64px 0 48px;
+        position: relative;
+        overflow: hidden;
+    }
+    .hero-search::before {
+        content: '';
+        position: absolute; inset: 0;
+        background-image: radial-gradient(circle at 20% 80%, rgba(60,239,180,0.12) 0%, transparent 50%),
+                          radial-gradient(circle at 80% 20%, rgba(255,255,255,0.06) 0%, transparent 50%);
+        pointer-events: none;
+    }
+    .hero-grid-lines {
+        position: absolute; inset: 0;
+        background-image: linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+                          linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+        background-size: 40px 40px;
+        pointer-events: none;
+    }
+
+    .search-bar {
+        background: #fff;
+        border-radius: 16px;
+        padding: 8px;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+    .search-input-wrap {
+        flex: 1;
+        min-width: 200px;
+        position: relative;
+    }
+    .search-input-wrap i {
+        position: absolute;
+        left: 14px; top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-muted);
+        font-size: 1rem;
+    }
+    .search-input {
+        width: 100%;
+        border: none;
+        border-radius: 10px;
+        padding: 12px 16px 12px 40px;
+        font-family: 'DM Sans', sans-serif;
+        font-size: 0.9rem;
+        color: var(--text-primary);
+        background: var(--surface);
+        outline: none;
+    }
+    .search-input:focus {
+        background: #fff;
+        box-shadow: 0 0 0 2px var(--primary-light);
+    }
+    .search-btn {
+        background: var(--primary);
+        color: white;
+        border: none;
+        border-radius: 10px;
+        padding: 12px 28px;
+        font-family: 'Syne', sans-serif;
+        font-weight: 700;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        white-space: nowrap;
+    }
+    .search-btn:hover {
+        background: var(--primary-light);
+        transform: translateY(-1px);
+        box-shadow: 0 6px 20px rgba(27,79,216,0.4);
+    }
+
+    .stats-strip {
+        display: flex; gap: 32px;
+        margin-top: 28px;
+        flex-wrap: wrap;
+    }
+    .stats-strip .stat {
+        font-size: 0.825rem;
+        color: rgba(255,255,255,0.7);
+        display: flex; align-items: center; gap: 6px;
+    }
+    .stats-strip .stat strong {
+        color: var(--accent);
+        font-family: 'Syne', sans-serif;
+        font-size: 0.95rem;
+    }
+
+    /* ── Filter Sidebar ──────────────────────────── */
+    .filter-sidebar {
+        background: #fff;
+        border: 1.5px solid var(--border);
+        border-radius: var(--radius-lg);
+        padding: 24px;
+        position: sticky;
+        top: calc(var(--nav-height) + 20px);
+    }
+    .filter-title {
+        font-family: 'Syne', sans-serif;
+        font-weight: 700;
+        font-size: 1rem;
+        margin-bottom: 20px;
+        color: var(--text-primary);
+        display: flex; align-items: center; gap: 8px;
+    }
+    .filter-section { margin-bottom: 24px; }
+    .filter-section-label {
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--text-muted);
+        margin-bottom: 12px;
+    }
+    .filter-select {
+        width: 100%;
+        border: 1.5px solid var(--border);
+        border-radius: 10px;
+        padding: 9px 14px;
+        font-family: 'DM Sans', sans-serif;
+        font-size: 0.875rem;
+        color: var(--text-primary);
+        background: var(--surface);
+        outline: none;
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%238A96A3' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 12px center;
+        cursor: pointer;
+        transition: border-color 0.2s;
+    }
+    .filter-select:focus { border-color: var(--primary-light); }
+
+    .filter-clear {
+        font-size: 0.825rem;
+        color: var(--primary-light);
+        font-weight: 500;
+        cursor: pointer;
+        background: none;
+        border: none;
+        padding: 0;
+        text-decoration: underline;
+        text-underline-offset: 2px;
+    }
+
+    /* ── Job Cards ───────────────────────────────── */
+    .job-card {
+        background: #fff;
+        border: 1.5px solid var(--border);
+        border-radius: var(--radius-lg);
+        padding: 24px;
+        transition: all 0.22s ease;
+        text-decoration: none;
+        color: inherit;
+        display: block;
+        position: relative;
+        overflow: hidden;
+    }
+    .job-card::before {
+        content: '';
+        position: absolute;
+        left: 0; top: 0; bottom: 0;
+        width: 3px;
+        background: var(--primary-light);
+        border-radius: 3px 0 0 3px;
+        transform: scaleY(0);
+        transition: transform 0.2s ease;
+        transform-origin: bottom;
+    }
+    .job-card:hover {
+        border-color: var(--primary-light);
+        box-shadow: var(--shadow-md);
+        transform: translateY(-2px);
+        color: inherit;
+    }
+    .job-card:hover::before { transform: scaleY(1); }
+
+    .company-logo {
+        width: 52px; height: 52px;
+        border-radius: 12px;
+        background: linear-gradient(135deg, var(--surface) 0%, var(--border) 100%);
+        border: 1.5px solid var(--border);
+        display: flex; align-items: center; justify-content: center;
+        font-family: 'Syne', sans-serif;
+        font-weight: 800;
+        font-size: 1rem;
+        color: var(--primary);
+        flex-shrink: 0;
+    }
+
+    .job-title-link {
+        font-family: 'Syne', sans-serif;
+        font-weight: 700;
+        font-size: 1.05rem;
+        color: var(--text-primary);
+        line-height: 1.3;
+        margin-bottom: 4px;
+    }
+    .company-name {
+        font-size: 0.875rem;
+        color: var(--text-secondary);
+        font-weight: 500;
+    }
+
+    .job-meta { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+    .meta-pill {
+        display: inline-flex; align-items: center; gap: 5px;
+        font-size: 0.775rem;
+        font-weight: 500;
+        padding: 4px 10px;
+        border-radius: 20px;
+        background: var(--surface);
+        color: var(--text-secondary);
+        border: 1px solid var(--border);
+    }
+    .meta-pill i { font-size: 0.7rem; }
+
+    .job-type-badge {
+        font-size: 0.7rem;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        padding: 4px 10px;
+        border-radius: 20px;
+    }
+    .badge-full-time { background: rgba(27,79,216,0.08); color: var(--primary-light); }
+    .badge-part-time { background: rgba(255,107,53,0.1); color: #CC4800; }
+    .badge-contract  { background: rgba(134,80,250,0.1); color: #6B21D8; }
+    .badge-remote    { background: rgba(16,185,129,0.1); color: #065F46; }
+    .badge-new {
+        background: var(--accent);
+        color: var(--primary);
+        font-size: 0.65rem;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        padding: 3px 8px;
+        border-radius: 20px;
+    }
+
+    .job-salary {
+        font-family: 'Syne', sans-serif;
+        font-weight: 700;
+        font-size: 0.95rem;
+        color: var(--primary);
+    }
+
+    /* ── Results Header ──────────────────────────── */
+    .results-bar {
+        display: flex; align-items: center; justify-content: space-between;
+        margin-bottom: 20px; flex-wrap: wrap; gap: 12px;
+    }
+    .results-count {
+        font-family: 'Syne', sans-serif;
+        font-weight: 700;
+        font-size: 1.1rem;
+        color: var(--text-primary);
+    }
+    .results-count span { color: var(--primary-light); }
+
+    .sort-select {
+        border: 1.5px solid var(--border);
+        border-radius: 10px;
+        padding: 8px 14px;
+        font-family: 'DM Sans', sans-serif;
+        font-size: 0.85rem;
+        color: var(--text-primary);
+        background: #fff;
+        outline: none;
+        cursor: pointer;
+    }
+    .sort-select:focus { border-color: var(--primary-light); }
+
+    /* ── Empty State ─────────────────────────────── */
+    .empty-state {
+        text-align: center;
+        padding: 80px 20px;
+    }
+    .empty-icon {
+        width: 80px; height: 80px;
+        background: var(--surface);
+        border: 2px solid var(--border);
+        border-radius: 20px;
+        display: flex; align-items: center; justify-content: center;
+        margin: 0 auto 24px;
+        font-size: 2rem;
+        color: var(--text-muted);
+    }
+
+    /* ── Active Filters ──────────────────────────── */
+    .active-filters { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+    .filter-tag {
+        display: inline-flex; align-items: center; gap: 6px;
+        background: rgba(27,79,216,0.08);
+        color: var(--primary-light);
+        border: 1px solid rgba(27,79,216,0.2);
+        border-radius: 20px;
+        padding: 4px 12px;
+        font-size: 0.8rem;
+        font-weight: 500;
+    }
+    .filter-tag a { color: inherit; text-decoration: none; }
+    .filter-tag a:hover { color: #E53E3E; }
+
+    .pagination-wrap { display: flex; justify-content: center; margin-top: 40px; }
+    .page-item-custom {
+        width: 38px; height: 38px;
+        display: flex; align-items: center; justify-content: center;
+        border: 1.5px solid var(--border);
+        border-radius: 10px;
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: var(--text-secondary);
+        text-decoration: none;
+        transition: all 0.15s;
+    }
+    .page-item-custom:hover, .page-item-custom.active {
+        background: var(--primary);
+        border-color: var(--primary);
+        color: white;
+    }
+</style>
+{% endblock %}
+
+{% block page_header %}
+<div class="hero-search">
+    <div class="hero-grid-lines"></div>
+    <div class="container position-relative">
+        <div class="section-label mb-3">
+            <i class="bi bi-lightning-fill me-1"></i>Live Job Board
+        </div>
+        <h1 style="font-size:clamp(2rem,5vw,3rem);font-weight:800;color:#fff;line-height:1.15;margin-bottom:8px;">
+            Find Work That<br><span style="color:var(--accent);">Moves You Forward</span>
+        </h1>
+        <p style="color:rgba(255,255,255,0.75);font-size:1.05rem;margin-bottom:32px;max-width:480px;">
+            Thousands of opportunities from top companies, updated daily.
+        </p>
+
+        <!-- Search Bar -->
+        <form method="get" action="{% url 'job_list' %}">
+            <div class="search-bar">
+                <div class="search-input-wrap">
+                    <i class="bi bi-search"></i>
+                    <input type="text" name="q" value="{{ query|default:'' }}"
+                        placeholder="Job title, keywords…" class="search-input">
+                </div>
+                <div class="search-input-wrap" style="max-width:200px;">
+                    <i class="bi bi-geo-alt"></i>
+                    <input type="text" name="location" value="{{ location|default:'' }}"
+                        placeholder="Location…" class="search-input">
+                </div>
+                <button type="submit" class="search-btn">
+                    <i class="bi bi-search me-2"></i>Search Jobs
+                </button>
+            </div>
+        </form>
+
+        <div class="stats-strip">
+            <div class="stat"><strong>{{ total_jobs|default:"2,400" }}+</strong> open roles</div>
+            <div class="stat"><strong>850+</strong> companies hiring</div>
+            <div class="stat"><strong>120</strong> new today</div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="row g-4 mt-0" style="margin-top:-20px!important;">
+
+    <!-- Sidebar Filters -->
+    <div class="col-lg-3">
+        <div class="filter-sidebar animate-in">
+            <div class="filter-title">
+                <i class="bi bi-sliders" style="color:var(--primary-light);"></i>
+                Filters
+                {% if category or job_type or location %}
+                    <a href="{% url 'job_list' %}" class="filter-clear ms-auto">Clear all</a>
+                {% endif %}
+            </div>
+
+            <form method="get" id="filterForm">
+                {% if query %}<input type="hidden" name="q" value="{{ query }}">{% endif %}
+
+                <div class="filter-section">
+                    <div class="filter-section-label">Category</div>
+                    <select name="category" class="filter-select" onchange="document.getElementById('filterForm').submit()">
+                        <option value="">All Categories</option>
+                        {% for cat in categories %}
+                            <option value="{{ cat.id }}" {% if category == cat.id|stringformat:"s" %}selected{% endif %}>
+                                {{ cat.name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="filter-section">
+                    <div class="filter-section-label">Job Type</div>
+                    <select name="job_type" class="filter-select" onchange="document.getElementById('filterForm').submit()">
+                        <option value="">All Types</option>
+                        <option value="full_time" {% if job_type == 'full_time' %}selected{% endif %}>Full-time</option>
+                        <option value="part_time" {% if job_type == 'part_time' %}selected{% endif %}>Part-time</option>
+                        <option value="contract"  {% if job_type == 'contract'  %}selected{% endif %}>Contract</option>
+                        <option value="freelance" {% if job_type == 'freelance' %}selected{% endif %}>Freelance</option>
+                        <option value="internship"{% if job_type == 'internship'%}selected{% endif %}>Internship</option>
+                    </select>
+                </div>
+
+                <div class="filter-section">
+                    <div class="filter-section-label">Location</div>
+                    <select name="remote" class="filter-select" onchange="document.getElementById('filterForm').submit()">
+                        <option value="">All Locations</option>
+                        <option value="remote"  {% if remote == 'remote'  %}selected{% endif %}>Remote</option>
+                        <option value="onsite"  {% if remote == 'onsite'  %}selected{% endif %}>On-site</option>
+                        <option value="hybrid"  {% if remote == 'hybrid'  %}selected{% endif %}>Hybrid</option>
+                    </select>
+                </div>
+
+                <div class="filter-section mb-0">
+                    <div class="filter-section-label">Experience Level</div>
+                    <select name="experience" class="filter-select" onchange="document.getElementById('filterForm').submit()">
+                        <option value="">All Levels</option>
+                        <option value="entry"  {% if experience == 'entry'  %}selected{% endif %}>Entry Level</option>
+                        <option value="mid"    {% if experience == 'mid'    %}selected{% endif %}>Mid Level</option>
+                        <option value="senior" {% if experience == 'senior' %}selected{% endif %}>Senior</option>
+                        <option value="lead"   {% if experience == 'lead'   %}selected{% endif %}>Lead / Manager</option>
+                    </select>
+                </div>
+            </form>
+
+            <!-- Featured Categories -->
+            <div style="margin-top:28px;padding-top:24px;border-top:1.5px solid var(--border);">
+                <div class="filter-section-label">Popular Categories</div>
+                {% for cat in categories|slice:":6" %}
+                    <a href="?category={{ cat.id }}" style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);text-decoration:none;color:var(--text-secondary);font-size:0.85rem;font-weight:500;transition:color 0.15s;" onmouseover="this.style.color='var(--primary)'" onmouseout="this.style.color='var(--text-secondary)'">
+                        <span>{{ cat.name }}</span>
+                        <span style="background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:1px 8px;font-size:0.7rem;color:var(--text-muted);">{{ cat.job_count|default:"0" }}</span>
+                    </a>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Job Listings -->
+    <div class="col-lg-9">
+
+        <!-- Active Filter Tags -->
+        {% if query or category or job_type %}
+        <div class="active-filters animate-in">
+            {% if query %}<span class="filter-tag">{{ query }} <a href="?{% if category %}category={{ category }}{% endif %}{% if job_type %}&job_type={{ job_type }}{% endif %}"><i class="bi bi-x"></i></a></span>{% endif %}
+            {% if job_type %}<span class="filter-tag">{{ job_type|title }} <a href="?{% if query %}q={{ query }}&{% endif %}{% if category %}category={{ category }}{% endif %}"><i class="bi bi-x"></i></a></span>{% endif %}
+        </div>
+        {% endif %}
+
+        <!-- Results Bar -->
+        <div class="results-bar animate-in animate-delay-1">
+            <div class="results-count">
+                <span>{{ jobs|length }}</span> jobs found
+                {% if query %} for "{{ query }}"{% endif %}
+            </div>
+            <select class="sort-select" onchange="window.location=this.value">
+                <option value="?sort=newest">Newest First</option>
+                <option value="?sort=salary">Highest Salary</option>
+                <option value="?sort=relevance">Most Relevant</option>
+            </select>
+        </div>
+
+        <!-- Job Cards -->
+        {% if jobs %}
+            <div style="display:flex;flex-direction:column;gap:14px;">
+                {% for job in jobs %}
+                <a href="{% url 'job_detail' job.pk %}" class="job-card animate-in" style="animation-delay:{{ forloop.counter0|add:2 }}0ms">
+                    <div class="d-flex gap-3 align-items-start">
+                        <!-- Company Logo -->
+                        <div class="company-logo">
+                            {{ job.company|slice:":2"|upper }}
+                        </div>
+
+                        <!-- Job Info -->
+                        <div class="flex-grow-1 min-w-0">
+                            <div class="d-flex align-items-start justify-content-between gap-2 flex-wrap">
+                                <div>
+                                    <div class="job-title-link">{{ job.title }}</div>
+                                    <div class="company-name">{{ job.company }}</div>
+                                </div>
+                                <div class="d-flex flex-column align-items-end gap-2">
+                                    {% if job.salary_min or job.salary_max %}
+                                        <div class="job-salary">
+                                            {% if job.salary_min %}${{ job.salary_min|floatformat:0 }}{% endif %}
+                                            {% if job.salary_min and job.salary_max %} — {% endif %}
+                                            {% if job.salary_max %}${{ job.salary_max|floatformat:0 }}{% endif %}
+                                        </div>
+                                    {% endif %}
+                                    {% if job.is_new %}<span class="badge-new">New</span>{% endif %}
+                                </div>
+                            </div>
+
+                            <div class="job-meta">
+                                <span class="meta-pill"><i class="bi bi-geo-alt"></i>{{ job.location }}</span>
+                                {% if job.job_type %}
+                                <span class="job-type-badge
+                                    {% if job.job_type == 'full_time' %}badge-full-time
+                                    {% elif job.job_type == 'part_time' %}badge-part-time
+                                    {% elif job.job_type == 'contract' %}badge-contract
+                                    {% elif job.job_type == 'remote' %}badge-remote
+                                    {% endif %}">
+                                    {{ job.get_job_type_display }}
+                                </span>
+                                {% endif %}
+                                {% if job.category %}
+                                <span class="meta-pill"><i class="bi bi-tag"></i>{{ job.category }}</span>
+                                {% endif %}
+                                <span class="meta-pill"><i class="bi bi-clock"></i>{{ job.created_at|timesince }} ago</span>
+                                {% if job.applications_count %}
+                                <span class="meta-pill"><i class="bi bi-people"></i>{{ job.applications_count }} applied</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    {% if job.description %}
+                    <p style="font-size:0.85rem;color:var(--text-secondary);margin-top:14px;margin-bottom:0;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;line-height:1.6;">
+                        {{ job.description|truncatewords:25 }}
+                    </p>
+                    {% endif %}
+
+                    <div style="display:flex;align-items:center;justify-content:flex-end;margin-top:14px;">
+                        <span style="font-size:0.8rem;font-weight:600;color:var(--primary-light);">
+                            View Details <i class="bi bi-arrow-right ms-1"></i>
+                        </span>
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
+
+            <!-- Pagination -->
+            {% if jobs.has_other_pages %}
+            <div class="pagination-wrap">
+                <div class="d-flex gap-2">
+                    {% if jobs.has_previous %}
+                        <a href="?page={{ jobs.previous_page_number }}{% if query %}&q={{ query }}{% endif %}" class="page-item-custom">
+                            <i class="bi bi-chevron-left"></i>
+                        </a>
+                    {% endif %}
+                    {% for num in jobs.paginator.page_range %}
+                        <a href="?page={{ num }}" class="page-item-custom {% if jobs.number == num %}active{% endif %}">{{ num }}</a>
+                    {% endfor %}
+                    {% if jobs.has_next %}
+                        <a href="?page={{ jobs.next_page_number }}{% if query %}&q={{ query }}{% endif %}" class="page-item-custom">
+                            <i class="bi bi-chevron-right"></i>
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+        {% else %}
+            <!-- Empty State -->
+            <div class="empty-state animate-in">
+                <div class="empty-icon"><i class="bi bi-briefcase"></i></div>
+                <h3 style="font-family:'Syne',sans-serif;font-weight:700;font-size:1.4rem;margin-bottom:10px;">No jobs found</h3>
+                <p style="color:var(--text-secondary);max-width:320px;margin:0 auto 24px;">
+                    {% if query %}No results for "{{ query }}". Try different keywords or clear your filters.
+                    {% else %}No jobs are available right now. Check back soon!{% endif %}
+                </p>
+                <a href="{% url 'job_list' %}" class="btn" style="background:var(--primary);color:white;border-radius:10px;padding:12px 28px;font-weight:600;text-decoration:none;display:inline-block;">
+                    Clear Filters
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

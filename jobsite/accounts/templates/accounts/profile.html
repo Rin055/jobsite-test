@@ -1,0 +1,508 @@
+{% extends 'base.html' %} {% block title %}My Profile — TalentBridge{% endblock %} 
+{% block page_header %}
+<div class="page-header">
+  <div class="container">
+    <div class="animate-in">
+      <div class="section-label">Account Settings</div>
+      <h1
+        style="
+          color: #fff;
+          font-size: 2.5rem;
+          font-weight: 800;
+          margin: 16px 0;
+          font-family: &quot;Syne&quot;, sans-serif;
+        "
+      >
+        My Profile
+      </h1>
+      <p
+        style="color: rgba(255, 255, 255, 0.75); font-size: 1.05rem; margin: 0"
+      >
+        Manage your account information and preferences
+      </p>
+    </div>
+  </div>
+</div>
+{% endblock %} {% block content %}
+<div class="row g-4">
+  <!-- Sidebar -->
+  <div class="col-lg-3">
+    <div
+      style="
+        background: var(--surface-card);
+        border: 1.5px solid var(--border);
+        border-radius: var(--radius);
+        padding: 24px;
+        position: sticky;
+        top: calc(var(--nav-height) + 16px);
+      "
+    >
+      <div
+        style="
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          text-align: center;
+        "
+      >
+        <div
+          style="
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(
+              135deg,
+              var(--primary-light),
+              var(--accent)
+            );
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 2rem;
+            font-weight: 800;
+            font-family: &quot;Syne&quot;, sans-serif;
+            margin-bottom: 16px;
+          "
+        >
+          {{ user.username|slice:":1"|upper }}
+        </div>
+        <h3
+          style="
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 0 0 4px;
+            font-family: &quot;Syne&quot;, sans-serif;
+          "
+        >
+          {{ user.username }}
+        </h3>
+        <p
+          style="
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            margin: 0 0 12px;
+          "
+        >
+          {{ user.email }}
+        </p>
+        <span
+          style="
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+          "
+          class="{% if user.is_employer %}badge-employer{% else %}badge-jobseeker{% endif %}"
+        >
+          {% if user.profile.is_employer %}Employer{% else %}Job Seeker{% endif %}
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Form -->
+  <div class="col-lg-9">
+    <div
+      style="
+        background: var(--surface-card);
+        border: 1.5px solid var(--border);
+        border-radius: var(--radius);
+        padding: 32px;
+      "
+    >
+      <form method="post" class="animate-in">
+        {% csrf_token %}
+
+        <!-- Personal Info Section -->
+        <div style="margin-bottom: 40px">
+          <h4
+            style="
+              font-size: 1rem;
+              font-weight: 700;
+              color: var(--text-primary);
+              margin-bottom: 20px;
+              font-family: &quot;Syne&quot;, sans-serif;
+              display: flex;
+              align-items: center;
+              gap: 10px;
+            "
+          >
+            <i
+              class="bi bi-person-circle"
+              style="color: var(--primary-light); font-size: 1.2rem"
+            ></i>
+            Personal Information
+          </h4>
+
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label
+                style="
+                  display: block;
+                  font-size: 0.875rem;
+                  font-weight: 600;
+                  color: var(--text-primary);
+                  margin-bottom: 8px;
+                "
+              >
+                First Name
+              </label>
+              <input
+                type="text"
+                value="{{ user.first_name }}"
+                disabled
+                style="
+                  width: 100%;
+                  padding: 10px 14px;
+                  border: 1.5px solid var(--border);
+                  border-radius: 8px;
+                  font-size: 0.9rem;
+                  background: var(--surface);
+                  color: var(--text-primary);
+                "
+              />
+              <small
+                style="
+                  color: var(--text-muted);
+                  font-size: 0.75rem;
+                  margin-top: 4px;
+                  display: block;
+                "
+                >Edit in Django admin</small
+              >
+            </div>
+            <div class="col-md-6">
+              <label
+                style="
+                  display: block;
+                  font-size: 0.875rem;
+                  font-weight: 600;
+                  color: var(--text-primary);
+                  margin-bottom: 8px;
+                "
+              >
+                Last Name
+              </label>
+              <input
+                type="text"
+                value="{{ user.last_name }}"
+                disabled
+                style="
+                  width: 100%;
+                  padding: 10px 14px;
+                  border: 1.5px solid var(--border);
+                  border-radius: 8px;
+                  font-size: 0.9rem;
+                  background: var(--surface);
+                  color: var(--text-primary);
+                "
+              />
+              <small
+                style="
+                  color: var(--text-muted);
+                  font-size: 0.75rem;
+                  margin-top: 4px;
+                  display: block;
+                "
+                >Edit in Django admin</small
+              >
+            </div>
+          </div>
+        </div>
+
+        <!-- Account Type Section -->
+        <div style="margin-bottom: 40px">
+          <h4
+            style="
+              font-size: 1rem;
+              font-weight: 700;
+              color: var(--text-primary);
+              margin-bottom: 20px;
+              font-family: &quot;Syne&quot;, sans-serif;
+              display: flex;
+              align-items: center;
+              gap: 10px;
+            "
+          >
+            <i
+              class="bi bi-briefcase"
+              style="color: var(--primary-light); font-size: 1.2rem"
+            ></i>
+            Account Type
+          </h4>
+
+          {% for field in form %} {% if field.name == 'is_employer' %}
+          <div
+            style="
+              display: flex;
+              align-items: center;
+              padding: 16px;
+              background: var(--surface);
+              border: 1.5px solid var(--border);
+              border-radius: 8px;
+              cursor: pointer;
+            "
+          >
+            {{ field }}
+            <label
+              for="{{ field.id_for_label }}"
+              style="flex: 1; cursor: pointer; margin: 0; margin-left: 12px"
+            >
+              <strong
+                style="
+                  color: var(--text-primary);
+                  display: block;
+                  font-size: 0.95rem;
+                "
+                >I am an Employer</strong
+              >
+              <small style="color: var(--text-muted)"
+                >Post jobs and manage applications</small
+              >
+            </label>
+          </div>
+          {% if field.errors %}
+          <div style="color: #c53030; font-size: 0.875rem; margin-top: 8px">
+            {% for error in field.errors %}{{ error }}{% endfor %}
+          </div>
+          {% endif %} {% endif %} {% endfor %}
+        </div>
+
+        <!-- Company Info Section -->
+        <div style="margin-bottom: 40px">
+          <h4
+            style="
+              font-size: 1rem;
+              font-weight: 700;
+              color: var(--text-primary);
+              margin-bottom: 20px;
+              font-family: &quot;Syne&quot;, sans-serif;
+              display: flex;
+              align-items: center;
+              gap: 10px;
+            "
+          >
+            <i
+              class="bi bi-building"
+              style="color: var(--primary-light); font-size: 1.2rem"
+            ></i>
+            Company Information
+          </h4>
+
+          {% for field in form %} {% if field.name == 'company_name' %}
+          <div class="mb-3">
+            <label
+              for="{{ field.id_for_label }}"
+              style="
+                display: block;
+                font-size: 0.875rem;
+                font-weight: 600;
+                color: var(--text-primary);
+                margin-bottom: 8px;
+              "
+            >
+              {{ field.label }}
+            </label>
+            <div style="position: relative">
+              <i
+                class="bi bi-building"
+                style="
+                  position: absolute;
+                  left: 14px;
+                  top: 50%;
+                  transform: translateY(-50%);
+                  color: var(--text-muted);
+                "
+              ></i>
+              {{ field }}
+            </div>
+            {% if field.errors %}
+            <div style="color: #c53030; font-size: 0.875rem; margin-top: 6px">
+              {% for error in field.errors %}{{ error }}{% endfor %}
+            </div>
+            {% endif %}
+            <small
+              style="
+                color: var(--text-muted);
+                font-size: 0.75rem;
+                margin-top: 6px;
+                display: block;
+              "
+              >Your company name (visible to applicants)</small
+            >
+          </div>
+          {% endif %} {% endfor %}
+        </div>
+
+        <!-- Bio Section -->
+        <div style="margin-bottom: 40px">
+          <h4
+            style="
+              font-size: 1rem;
+              font-weight: 700;
+              color: var(--text-primary);
+              margin-bottom: 20px;
+              font-family: &quot;Syne&quot;, sans-serif;
+              display: flex;
+              align-items: center;
+              gap: 10px;
+            "
+          >
+            <i
+              class="bi bi-file-text"
+              style="color: var(--primary-light); font-size: 1.2rem"
+            ></i>
+            Bio & Description
+          </h4>
+
+          {% for field in form %} {% if field.name == 'bio' %}
+          <div class="mb-3">
+            <label
+              for="{{ field.id_for_label }}"
+              style="
+                display: block;
+                font-size: 0.875rem;
+                font-weight: 600;
+                color: var(--text-primary);
+                margin-bottom: 8px;
+              "
+            >
+              {{ field.label }}
+            </label>
+            {{ field }} {% if field.errors %}
+            <div style="color: #c53030; font-size: 0.875rem; margin-top: 6px">
+              {% for error in field.errors %}{{ error }}{% endfor %}
+            </div>
+            {% endif %}
+            <small
+              style="
+                color: var(--text-muted);
+                font-size: 0.75rem;
+                margin-top: 6px;
+                display: block;
+              "
+              >Tell applicants about yourself or your company (max 500
+              characters)</small
+            >
+          </div>
+          {% endif %} {% endfor %}
+        </div>
+
+        <!-- Action Buttons -->
+        <div
+          style="
+            display: flex;
+            gap: 12px;
+            padding-top: 24px;
+            border-top: 1px solid var(--border);
+          "
+        >
+          <button
+            type="submit"
+            style="
+              padding: 12px 28px;
+              background: var(--primary);
+              color: #fff;
+              border: none;
+              border-radius: 10px;
+              font-weight: 600;
+              font-size: 0.9rem;
+              cursor: pointer;
+              transition: all 0.2s;
+              display: inline-flex;
+              align-items: center;
+              gap: 8px;
+            "
+          >
+            <i class="bi bi-check-circle"></i>
+            Save Changes
+          </button>
+          <a
+            href="{% url 'job_list' %}"
+            style="
+              padding: 12px 28px;
+              background: var(--surface);
+              color: var(--text-primary);
+              border: 1.5px solid var(--border);
+              border-radius: 10px;
+              font-weight: 600;
+              font-size: 0.9rem;
+              text-decoration: none;
+              transition: all 0.2s;
+              display: inline-flex;
+              align-items: center;
+              gap: 8px;
+            "
+          >
+            <i class="bi bi-x-circle"></i>
+            Cancel
+          </a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<style>
+  #id_is_employer,
+  #id_company_name,
+  #id_bio {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-family: "DM Sans", sans-serif;
+    color: var(--text-primary);
+    transition: all 0.2s ease;
+  }
+
+  #id_is_employer {
+    padding: 10px;
+    width: auto;
+    margin-right: 0;
+  }
+
+  #id_company_name {
+    padding-left: 38px;
+  }
+
+  #id_company_name:focus,
+  #id_bio:focus {
+    border-color: var(--primary-light);
+    box-shadow: 0 0 0 3px rgba(27, 79, 216, 0.1);
+    outline: none;
+  }
+
+  #id_bio {
+    resize: vertical;
+    min-height: 120px;
+  }
+
+  .badge-employer {
+    background: rgba(27, 79, 216, 0.1);
+    color: var(--primary-light);
+  }
+
+  .badge-jobseeker {
+    background: rgba(60, 239, 180, 0.15);
+    color: #0d7056;
+  }
+
+  button[type="submit"]:hover {
+    background: var(--primary-light);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+  }
+
+  a[href]:hover {
+    border-color: var(--primary-light);
+    background: rgba(27, 79, 216, 0.03);
+  }
+</style>
+{% endblock %}

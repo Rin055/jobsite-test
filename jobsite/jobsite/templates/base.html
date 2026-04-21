@@ -1,0 +1,790 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>
+      {% block title %}TalentBridge — Find Your Next Role{% endblock %}
+    </title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --primary: #0a2463;
+        --primary-light: #1b4fd8;
+        --accent: #3cefb4;
+        --accent-warm: #ff6b35;
+        --surface: #f8faff;
+        --surface-card: #ffffff;
+        --text-primary: #0d1b2a;
+        --text-secondary: #556070;
+        --text-muted: #8a96a3;
+        --border: #e4eaf4;
+        --border-focus: #1b4fd8;
+        --shadow-sm:
+          0 1px 3px rgba(10, 36, 99, 0.06), 0 1px 2px rgba(10, 36, 99, 0.04);
+        --shadow-md:
+          0 4px 16px rgba(10, 36, 99, 0.08), 0 2px 6px rgba(10, 36, 99, 0.05);
+        --shadow-lg:
+          0 12px 40px rgba(10, 36, 99, 0.12), 0 4px 12px rgba(10, 36, 99, 0.07);
+        --radius: 12px;
+        --radius-lg: 20px;
+        --nav-height: 72px;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin-top: 1%;
+        font-family: "DM Sans", sans-serif;
+        font-size: 15px;
+        line-height: 1.65;
+        color: var(--text-primary);
+        background: var(--surface);
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+      }
+
+      h1,
+      h2,
+      h3,
+      h4,
+      h5,
+      h6,
+      .font-display {
+        font-family: "Syne", sans-serif;
+      }
+
+      /* ── Navbar ─────────────────────────────── */
+      .navbar-main {
+      
+        background: rgba(255, 255, 255, 0.92);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border-bottom: 1px solid var(--border);
+        height: var(--nav-height);
+        position: sticky;
+        top: 0;
+        z-index: 1030;
+        box-shadow: var(--shadow-sm);
+      }
+
+      .navbar-brand-text {
+        font-family: "Syne", sans-serif;
+        font-weight: 800;
+        font-size: 1.35rem;
+        letter-spacing: -0.02em;
+        color: var(--primary) !important;
+      }
+      .navbar-brand-text span {
+        color: var(--primary-light);
+      }
+      .brand-dot {
+        display: inline-block;
+        width: 7px;
+        height: 7px;
+        background: var(--accent);
+        border-radius: 50%;
+        margin-left: 2px;
+        vertical-align: middle;
+        position: relative;
+        top: -3px;
+      }
+
+      .nav-link-custom {
+        font-family: "DM Sans", sans-serif;
+        font-weight: 500;
+        font-size: 0.9rem;
+        color: var(--text-secondary) !important;
+        padding: 6px 14px !important;
+        border-radius: 8px;
+        transition: all 0.2s ease;
+        letter-spacing: 0.01em;
+      }
+      .nav-link-custom:hover,
+      .nav-link-custom.active {
+        color: var(--primary) !important;
+        background: rgba(27, 79, 216, 0.07);
+      }
+
+      .btn-nav-primary {
+        background: var(--primary);
+        color: #fff !important;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 0.875rem;
+        padding: 8px 20px;
+        border: none;
+        transition: all 0.2s ease;
+        letter-spacing: 0.01em;
+      }
+      .btn-nav-primary:hover {
+        background: var(--primary-light);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(27, 79, 216, 0.3);
+      }
+
+      .btn-nav-ghost {
+        background: transparent;
+        color: var(--primary) !important;
+        border: 1.5px solid var(--border);
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 0.875rem;
+        padding: 7px 20px;
+        transition: all 0.2s ease;
+      }
+      .btn-nav-ghost:hover {
+        border-color: var(--primary-light);
+        background: rgba(27, 79, 216, 0.05);
+      }
+
+      /* ── User Avatar ─────────────────────────── */
+      .user-avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        background: linear-gradient(
+          135deg,
+          var(--primary-light),
+          var(--accent)
+        );
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 700;
+        font-size: 0.8rem;
+        font-family: "Syne", sans-serif;
+        flex-shrink: 0;
+      }
+
+      .user-menu-btn {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        background: var(--surface);
+        border: 1.5px solid var(--border);
+        border-radius: 12px;
+        padding: 5px 14px 5px 6px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-decoration: none;
+      }
+      .user-menu-btn:hover {
+        border-color: var(--primary-light);
+        box-shadow: var(--shadow-sm);
+      }
+      .user-menu-btn .user-name {
+        font-weight: 500;
+        font-size: 0.875rem;
+        color: var(--text-primary);
+      }
+
+      .dropdown-menu-custom {
+        border: 1.5px solid var(--border);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow-lg);
+        padding: 8px;
+        min-width: 200px;
+      }
+      .dropdown-item-custom {
+        border-radius: 8px;
+        padding: 9px 14px;
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: var(--text-primary);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        transition: all 0.15s ease;
+        text-decoration: none;
+      }
+      .dropdown-item-custom:hover {
+        background: var(--surface);
+        color: var(--primary);
+      }
+      .dropdown-item-custom.danger:hover {
+        background: #fff5f5;
+        color: #e53e3e;
+      }
+      .dropdown-divider-custom {
+        height: 1px;
+        background: var(--border);
+        margin: 6px 0;
+      }
+
+      /* ── Alerts ──────────────────────────────── */
+      .alert-custom {
+        border: none;
+        border-radius: var(--radius);
+        padding: 14px 18px;
+        font-size: 0.9rem;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .alert-success-custom {
+        background: #f0fbf6;
+        color: #1a7c4a;
+        border-left: 4px solid #2ecc71;
+      }
+      .alert-error-custom {
+        background: #fff5f5;
+        color: #c53030;
+        border-left: 4px solid #e53e3e;
+      }
+      .alert-info-custom {
+        background: #eff6ff;
+        color: #1e40af;
+        border-left: 4px solid var(--primary-light);
+      }
+
+      /* ── Footer ──────────────────────────────── */
+      footer {
+        background: var(--primary);
+        color: rgba(255, 255, 255, 0.7);
+        padding: 56px 0 32px;
+        margin-top: auto;
+      }
+      footer h5 {
+        color: #fff;
+        font-family: "Syne", sans-serif;
+        font-weight: 700;
+        margin-bottom: 20px;
+      }
+      footer a {
+        color: rgba(255, 255, 255, 0.6);
+        text-decoration: none;
+        font-size: 0.875rem;
+        transition: color 0.2s;
+      }
+      footer a:hover {
+        color: var(--accent);
+      }
+      .footer-brand {
+        font-family: "Syne", sans-serif;
+        font-weight: 800;
+        font-size: 1.4rem;
+        color: #fff;
+      }
+      .footer-bottom {
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        margin-top: 40px;
+        padding-top: 24px;
+        font-size: 0.825rem;
+      }
+      .footer-social a {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        background: rgba(255, 255, 255, 0.08);
+        border-radius: 8px;
+        color: rgba(255, 255, 255, 0.7) !important;
+        font-size: 1rem;
+        transition: all 0.2s;
+      }
+      .footer-social a:hover {
+        background: var(--accent);
+        color: var(--primary) !important;
+      }
+
+      /* ── Shared Utilities ────────────────────── */
+      .badge-role {
+        font-size: 0.72rem;
+        font-weight: 600;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        padding: 4px 10px;
+        border-radius: 6px;
+      }
+      .badge-employer {
+        background: rgba(27, 79, 216, 0.1);
+        color: var(--primary-light);
+      }
+      .badge-jobseeker {
+        background: rgba(60, 239, 180, 0.15);
+        color: #0d7056;
+      }
+
+      .page-header {
+        background: linear-gradient(
+          135deg,
+          var(--primary) 0%,
+          #1b3fa0 60%,
+          #234fcc 100%
+        );
+        padding: 60px 0 48px;
+        position: relative;
+        overflow: hidden;
+      }
+      .page-header::before {
+        content: "";
+        position: absolute;
+        top: -50%;
+        right: -10%;
+        width: 500px;
+        height: 500px;
+        background: radial-gradient(
+          circle,
+          rgba(60, 239, 180, 0.12) 0%,
+          transparent 70%
+        );
+        pointer-events: none;
+      }
+      .page-header::after {
+        content: "";
+        position: absolute;
+        bottom: -30%;
+        left: 5%;
+        width: 300px;
+        height: 300px;
+        background: radial-gradient(
+          circle,
+          rgba(255, 255, 255, 0.05) 0%,
+          transparent 70%
+        );
+        pointer-events: none;
+      }
+
+      .section-label {
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--accent);
+      }
+
+      .main-content {
+        flex: 1;
+        padding: 40px 0 64px;
+      }
+
+      /* ── Scrollbar ───────────────────────────── */
+      ::-webkit-scrollbar {
+        width: 6px;
+      }
+      ::-webkit-scrollbar-track {
+        background: var(--surface);
+      }
+      ::-webkit-scrollbar-thumb {
+        background: var(--border);
+        border-radius: 10px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #b0bad4;
+      }
+
+      /* ── Animations ──────────────────────────── */
+      @keyframes fadeInUp {
+        from {
+          opacity: 0;
+          transform: translateY(16px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      .animate-in {
+        animation: fadeInUp 0.45s ease both;
+      }
+      .animate-delay-1 {
+        animation-delay: 0.05s;
+      }
+      .animate-delay-2 {
+        animation-delay: 0.1s;
+      }
+      .animate-delay-3 {
+        animation-delay: 0.15s;
+      }
+      .animate-delay-4 {
+        animation-delay: 0.2s;
+      }
+
+      /* ── Responsive ──────────────────────────── */
+      @media (max-width: 768px) {
+        .page-header {
+          padding: 40px 0 36px;
+        }
+        .main-content {
+          padding: 28px 0 48px;
+        }
+      }
+    </style>
+    {% block extra_css %}{% endblock %}
+  </head>
+  <body>
+    <!-- ── Navigation ──────────────────────────────────────── -->
+    <nav class="navbar-main">
+      <div class="container">
+        <div class="d-flex align-items-center justify-content-between w-100">
+          <!-- Brand -->
+          <a
+            href="{% url 'job_list' %}"
+            class="navbar-brand-text text-decoration-none d-flex align-items-center gap-2"
+          >
+            <div
+              style="
+                width: 34px;
+                height: 34px;
+                background: var(--primary);
+                border-radius: 10px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+              "
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                <path
+                  d="M20 7H4C2.9 7 2 7.9 2 9V19C2 20.1 2.9 21 4 21H20C21.1 21 22 20.1 22 19V9C22 7.9 21.1 7 20 7Z"
+                  fill="white"
+                  fill-opacity="0.9"
+                />
+                <path
+                  d="M16 7V5C16 3.9 15.1 3 14 3H10C8.9 3 8 3.9 8 5V7"
+                  stroke="white"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                />
+                <circle cx="12" cy="14" r="2" fill="var(--accent)" />
+              </svg>
+            </div>
+            Talent<span>Bridge</span><span class="brand-dot"></span>
+          </a>
+
+          <!-- Nav Links - Desktop -->
+          <div class="d-none d-lg-flex align-items-center gap-1">
+            <a
+              href="{% url 'job_list' %}"
+              class="nav-link-custom {% if request.resolver_match.url_name == 'job_list' %}active{% endif %}"
+            >
+              <i class="bi bi-briefcase me-1"></i>Browse Jobs
+            </a>
+            {% if user.is_authenticated %} {% if user.profile.is_employer %}
+            <a href="{% url 'job_create' %}" class="nav-link-custom">
+              <i class="bi bi-plus-circle me-1"></i>Post a Job
+            </a>
+            {% else %}
+            <a
+              href="{% url 'my_applications' %}"
+              class="nav-link-custom {% if request.resolver_match.url_name == 'my_applications' %}active{% endif %}"
+            >
+              <i class="bi bi-file-text me-1"></i>Applications
+            </a>
+            {% endif %} {% endif %}
+          </div>
+
+          <!-- Auth Actions -->
+          <div class="d-flex align-items-center gap-2">
+            {% if user.is_authenticated %}
+            <!-- User Menu -->
+            <div class="dropdown">
+              <a
+                href="#"
+                class="user-menu-btn"
+                data-bs-toggle="dropdown"
+                aria-expanded="false"
+              >
+                <div class="user-avatar">
+                  {{ user.username|slice:":2"|upper }}
+                </div>
+                <span class="user-name d-none d-md-block"
+                  >{{ user.username }}</span
+                >
+                <i
+                  class="bi bi-chevron-down"
+                  style="font-size: 0.7rem; color: var(--text-muted)"
+                ></i>
+              </a>
+              <ul class="dropdown-menu dropdown-menu-end dropdown-menu-custom">
+                <li>
+                  <div style="padding: 10px 14px 6px">
+                    <div
+                      style="
+                        font-weight: 600;
+                        font-size: 0.875rem;
+                        color: var(--text-primary);
+                      "
+                    >
+                      {{ user.get_full_name|default:user.username }}
+                    </div>
+                    <div style="font-size: 0.775rem; color: var(--text-muted)">
+                      {{ user.email }}
+                    </div>
+                    {% if user.profile.is_employer %}
+                    <span class="badge-role badge-employer mt-1 d-inline-block"
+                      >Employer</span
+                    >
+                    {% else %}
+                    <span class="badge-role badge-jobseeker mt-1 d-inline-block"
+                      >Job Seeker</span
+                    >
+                    {% endif %}
+                  </div>
+                </li>
+                <li><div class="dropdown-divider-custom"></div></li>
+                <li>
+                  <a href="{% url 'profile' %}" class="dropdown-item-custom"
+                    ><i class="bi bi-person"></i>Profile</a
+                  >
+                </li>
+                {% if user.profile.is_employer %}
+                <li>
+                  <a href="{% url 'job_create' %}" class="dropdown-item-custom"
+                    ><i class="bi bi-plus-circle"></i>Post a Job</a
+                  >
+                </li>
+                {% else %}
+                <li>
+                  <a
+                    href="{% url 'my_applications' %}"
+                    class="dropdown-item-custom"
+                    ><i class="bi bi-file-text"></i>My Applications</a
+                  >
+                </li>
+                {% endif %}
+                <li><div class="dropdown-divider-custom"></div></li>
+                <li>
+                  <form method="post" action="{% url 'logout' %}">
+                    {% csrf_token %}
+                    <button
+                      type="submit"
+                      class="dropdown-item-custom danger w-100 border-0 bg-transparent text-start"
+                    >
+                      <i class="bi bi-box-arrow-right"></i>Sign Out
+                    </button>
+                  </form>
+                </li>
+              </ul>
+            </div>
+
+            {% if user.profile.is_employer %}
+            <a
+              href="{% url 'job_create' %}"
+              class="btn-nav-primary d-none d-md-block"
+            >
+              <i class="bi bi-plus me-1"></i>Post Job
+            </a>
+            {% endif %} {% else %}
+            <a href="{% url 'login' %}" class="btn-nav-ghost">Sign in</a>
+            <a href="{% url 'register' %}" class="btn-nav-primary"
+              >Get started</a
+            >
+            {% endif %}
+
+            <!-- Mobile Menu Toggle -->
+            <button
+              class="d-lg-none btn p-2 border-0"
+              id="mobileMenuToggle"
+              style="background: var(--surface); border-radius: 8px"
+            >
+              <i
+                class="bi bi-list"
+                style="font-size: 1.25rem; color: var(--primary)"
+              ></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Mobile Menu -->
+        <div id="mobileMenu" style="display: none; padding: 12px 0 8px">
+          <div
+            style="height: 1px; background: var(--border); margin-bottom: 12px"
+          ></div>
+          <a href="{% url 'job_list' %}" class="nav-link-custom d-block mb-1"
+            >Browse Jobs</a
+          >
+          {% if user.is_authenticated %}
+          <a href="{% url 'profile' %}" class="nav-link-custom d-block mb-1"
+            >Profile</a
+          >
+          {% if user.profile.is_employer %}
+          <a href="{% url 'job_create' %}" class="nav-link-custom d-block mb-1"
+            >Post a Job</a
+          >
+          {% else %}
+          <a
+            href="{% url 'my_applications' %}"
+            class="nav-link-custom d-block mb-1"
+            >My Applications</a
+          >
+          {% endif %} {% else %}
+          <a href="{% url 'login' %}" class="nav-link-custom d-block mb-1"
+            >Sign in</a
+          >
+          <a href="{% url 'register' %}" class="nav-link-custom d-block mb-1"
+            >Get started</a
+          >
+          {% endif %}
+        </div>
+      </div>
+    </nav>
+
+    <!-- ── Flash Messages ───────────────────────────────────── -->
+    {% if messages %}
+    <div class="container mt-3">
+      {% for message in messages %}
+      <div
+        class="alert-custom animate-in {% if message.tags == 'success' %}alert-success-custom {% elif message.tags == 'error' %}alert-error-custom {% else %}alert-info-custom{% endif %} mb-2"
+      >
+        <i
+          class="bi {% if message.tags == 'success' %}bi-check-circle-fill {% elif message.tags == 'error' %}bi-exclamation-circle-fill {% else %}bi-info-circle-fill{% endif %}"
+        ></i>
+        {{ message }}
+        <button
+          type="button"
+          onclick="this.parentElement.remove()"
+          style="
+            margin-left: auto;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0;
+            font-size: 1rem;
+            color: inherit;
+            opacity: 0.6;
+          "
+        >
+          <i class="bi bi-x"></i>
+        </button>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- ── Page Block Header ────────────────────────────────── -->
+    {% block page_header %}{% endblock %}
+
+    <!-- ── Main Content ─────────────────────────────────────── -->
+    <main class="main-content">
+      <div class="container">{% block content %}{% endblock %}</div>
+    </main>
+
+    <!-- ── Footer ──────────────────────────────────────────── -->
+    <footer>
+      <div class="container">
+        <div class="row g-5">
+          <div class="col-lg-4">
+            <div class="footer-brand mb-3">
+              TalentBridge<span style="color: var(--accent)">.</span>
+            </div>
+            <p style="font-size: 0.875rem; line-height: 1.7; max-width: 280px">
+              Connecting exceptional talent with outstanding companies. Your
+              next great opportunity starts here.
+            </p>
+            <div class="footer-social d-flex gap-2 mt-4">
+              <a href="#"><i class="bi bi-twitter-x"></i></a>
+              <a href="#"><i class="bi bi-linkedin"></i></a>
+              <a href="#"><i class="bi bi-instagram"></i></a>
+              <a href="#"><i class="bi bi-github"></i></a>
+            </div>
+          </div>
+          <div class="col-6 col-lg-2">
+            <h5>For Job Seekers</h5>
+            <ul
+              class="list-unstyled"
+              style="display: flex; flex-direction: column; gap: 10px"
+            >
+              <li><a href="{% url 'job_list' %}">Browse Jobs</a></li>
+              {% if user.is_authenticated %}
+              <li><a href="{% url 'my_applications' %}">My Applications</a></li>
+              {% endif %}
+              <li><a href="#">Career Advice</a></li>
+              <li><a href="#">Resume Tips</a></li>
+            </ul>
+          </div>
+          <div class="col-6 col-lg-2">
+            <h5>For Employers</h5>
+            <ul
+              class="list-unstyled"
+              style="display: flex; flex-direction: column; gap: 10px"
+            >
+              {% if user.is_authenticated and user.profile.is_employer %}
+              <li><a href="{% url 'job_create' %}">Post a Job</a></li>
+              {% endif %}
+              <li><a href="#">Pricing</a></li>
+              <li><a href="#">Solutions</a></li>
+              <li><a href="#">Hire at Scale</a></li>
+            </ul>
+          </div>
+          <div class="col-6 col-lg-2">
+            <h5>Company</h5>
+            <ul
+              class="list-unstyled"
+              style="display: flex; flex-direction: column; gap: 10px"
+            >
+              <li><a href="#">About Us</a></li>
+              <li><a href="#">Blog</a></li>
+              <li><a href="#">Careers</a></li>
+              <li><a href="#">Contact</a></li>
+            </ul>
+          </div>
+          <div class="col-6 col-lg-2">
+            <h5>Legal</h5>
+            <ul
+              class="list-unstyled"
+              style="display: flex; flex-direction: column; gap: 10px"
+            >
+              <li><a href="#">Privacy Policy</a></li>
+              <li><a href="#">Terms of Use</a></li>
+              <li><a href="#">Cookie Policy</a></li>
+            </ul>
+          </div>
+        </div>
+        <div
+          class="footer-bottom d-flex flex-column flex-md-row align-items-center justify-content-between gap-2"
+        >
+          <span>© 2025 TalentBridge. All rights reserved.</span>
+          <span
+            >Built with <span style="color: var(--accent)">♥</span> for great
+            careers</span
+          >
+        </div>
+      </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+      // Mobile menu toggle
+      document
+        .getElementById("mobileMenuToggle")
+        ?.addEventListener("click", function () {
+          const menu = document.getElementById("mobileMenu");
+          const isOpen = menu.style.display === "block";
+          menu.style.display = isOpen ? "none" : "block";
+          this.innerHTML = isOpen
+            ? '<i class="bi bi-list" style="font-size:1.25rem;color:var(--primary);"></i>'
+            : '<i class="bi bi-x" style="font-size:1.25rem;color:var(--primary);"></i>';
+        });
+
+      // Auto-dismiss alerts
+      setTimeout(() => {
+        document.querySelectorAll(".alert-custom").forEach((el) => {
+          el.style.transition = "opacity 0.4s";
+          el.style.opacity = "0";
+          setTimeout(() => el.remove(), 400);
+        });
+      }, 5000);
+    </script>
+    {% block extra_js %}{% endblock %}
+  </body>
+</html>
