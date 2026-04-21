@@ -348,6 +348,11 @@
 
         <!-- Search Bar -->
         <form method="get" action="{% url 'job_list' %}">
+            {% if category %}<input type="hidden" name="category" value="{{ category }}">{% endif %}
+            {% if job_type %}<input type="hidden" name="job_type" value="{{ job_type }}">{% endif %}
+            {% if remote %}<input type="hidden" name="remote" value="{{ remote }}">{% endif %}
+            {% if experience %}<input type="hidden" name="experience" value="{{ experience }}">{% endif %}
+            {% if sort %}<input type="hidden" name="sort" value="{{ sort }}">{% endif %}
             <div class="search-bar">
                 <div class="search-input-wrap">
                     <i class="bi bi-search"></i>
@@ -383,13 +388,15 @@
             <div class="filter-title">
                 <i class="bi bi-sliders" style="color:var(--primary-light);"></i>
                 Filters
-                {% if category or job_type or location %}
+                {% if query or location or category or job_type or remote or experience %}
                     <a href="{% url 'job_list' %}" class="filter-clear ms-auto">Clear all</a>
                 {% endif %}
             </div>
 
             <form method="get" id="filterForm">
                 {% if query %}<input type="hidden" name="q" value="{{ query }}">{% endif %}
+                {% if location %}<input type="hidden" name="location" value="{{ location }}">{% endif %}
+                {% if sort %}<input type="hidden" name="sort" value="{{ sort }}">{% endif %}
 
                 <div class="filter-section">
                     <div class="filter-section-label">Category</div>
@@ -421,7 +428,6 @@
                         <option value="">All Locations</option>
                         <option value="remote"  {% if remote == 'remote'  %}selected{% endif %}>Remote</option>
                         <option value="onsite"  {% if remote == 'onsite'  %}selected{% endif %}>On-site</option>
-                        <option value="hybrid"  {% if remote == 'hybrid'  %}selected{% endif %}>Hybrid</option>
                     </select>
                 </div>
 
@@ -464,13 +470,13 @@
         <!-- Results Bar -->
         <div class="results-bar animate-in animate-delay-1">
             <div class="results-count">
-                <span>{{ jobs|length }}</span> jobs found
+                <span>{{ jobs.paginator.count }}</span> jobs found
                 {% if query %} for "{{ query }}"{% endif %}
             </div>
             <select class="sort-select" onchange="window.location=this.value">
-                <option value="?sort=newest">Newest First</option>
-                <option value="?sort=salary">Highest Salary</option>
-                <option value="?sort=relevance">Most Relevant</option>
+                <option value="{{ sort_urls.newest }}" {% if sort == 'newest' %}selected{% endif %}>Newest First</option>
+                <option value="{{ sort_urls.salary }}" {% if sort == 'salary' %}selected{% endif %}>Highest Salary</option>
+                <option value="{{ sort_urls.relevance }}" {% if sort == 'relevance' %}selected{% endif %}>Most Relevant</option>
             </select>
         </div>
 
@@ -547,15 +553,15 @@
             <div class="pagination-wrap">
                 <div class="d-flex gap-2">
                     {% if jobs.has_previous %}
-                        <a href="?page={{ jobs.previous_page_number }}{% if query %}&q={{ query }}{% endif %}" class="page-item-custom">
+                        <a href="{% if base_querystring %}?{{ base_querystring }}&page={{ jobs.previous_page_number }}{% else %}?page={{ jobs.previous_page_number }}{% endif %}" class="page-item-custom">
                             <i class="bi bi-chevron-left"></i>
                         </a>
                     {% endif %}
                     {% for num in jobs.paginator.page_range %}
-                        <a href="?page={{ num }}" class="page-item-custom {% if jobs.number == num %}active{% endif %}">{{ num }}</a>
+                        <a href="{% if base_querystring %}?{{ base_querystring }}&page={{ num }}{% else %}?page={{ num }}{% endif %}" class="page-item-custom {% if jobs.number == num %}active{% endif %}">{{ num }}</a>
                     {% endfor %}
                     {% if jobs.has_next %}
-                        <a href="?page={{ jobs.next_page_number }}{% if query %}&q={{ query }}{% endif %}" class="page-item-custom">
+                        <a href="{% if base_querystring %}?{{ base_querystring }}&page={{ jobs.next_page_number }}{% else %}?page={{ jobs.next_page_number }}{% endif %}" class="page-item-custom">
                             <i class="bi bi-chevron-right"></i>
                         </a>
                     {% endif %}

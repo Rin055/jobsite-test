@@ -6,8 +6,10 @@ from .models import Profile
 @receiver(post_save, sender=User)
 def create_user_profile(sender, instance, created, **kwargs):
     if created:
-        Profile.objects.create(user=instance)
+        Profile.objects.get_or_create(user=instance)
 
 @receiver(post_save, sender=User)
 def save_user_profile(sender, instance, **kwargs):
-    instance.profile.save()
+    # Keep this signal idempotent and side-effect free: ensure a Profile exists,
+    # but do not attempt to resave it (that can conflict with role-lock logic).
+    Profile.objects.get_or_create(user=instance)

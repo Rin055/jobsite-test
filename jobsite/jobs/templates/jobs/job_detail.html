@@ -417,10 +417,18 @@
                 <!-- Apply Header -->
                 <div class="apply-sidebar-header">
                     <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.25rem;color:#fff;margin-bottom:6px;">
-                        Ready to apply?
+                        {% if user.is_authenticated and user.profile.is_employer and user != job.posted_by %}
+                          Job overview
+                        {% else %}
+                          Ready to apply?
+                        {% endif %}
                     </div>
                     <div style="color:rgba(255,255,255,0.7);font-size:0.85rem;">
-                        Join {{ job.applications.count }} other applicant{% if job.applications.count != 1 %}s{% endif %}
+                        {% if user.is_authenticated and user.profile.is_employer and user != job.posted_by %}
+                          {{ job.created_at|date:"M d, Y" }} · {{ job.location|default:"Location not specified" }}
+                        {% else %}
+                          Join {{ job.applications.count }} other applicant{% if job.applications.count != 1 %}s{% endif %}
+                        {% endif %}
                     </div>
                 </div>
 
@@ -431,21 +439,16 @@
                                 <i class="bi bi-info-circle me-2"></i>
                                 You posted this job
                             </div>
-                        {% elif already_applied %}
+                        {% elif has_applied or already_applied %}
                             <div class="applied-notice mb-4">
                                 <i class="bi bi-check-circle-fill me-2" style="font-size:1.1rem;"></i>
                                 <div style="font-weight:700;margin-bottom:4px;">Application Submitted!</div>
                                 <div style="font-size:0.825rem;opacity:0.8;">We'll notify you of any updates.</div>
                             </div>
-                        {% elif user.profile.role == 'jobseeker' %}
-                            <a href="{% url 'apply' job.pk %}" class="btn-apply-main mb-4">
+                        {% elif not user.profile.is_employer %}
+                            <a href="{% url 'apply_for_job' job.pk %}" class="btn-apply-main mb-4">
                                 <i class="bi bi-send me-2"></i>Apply Now
                             </a>
-                        {% else %}
-                            <div class="applied-notice mb-4" style="background:#FFF8E6;border-color:#FBBF24;color:#92400E;">
-                                <i class="bi bi-info-circle me-2"></i>
-                                Switch to a job seeker account to apply.
-                            </div>
                         {% endif %}
                     {% else %}
                         <a href="{% url 'login' %}?next={{ request.path }}" class="btn-apply-main mb-4">
